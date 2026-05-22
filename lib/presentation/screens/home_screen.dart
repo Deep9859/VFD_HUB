@@ -1898,6 +1898,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
+    if (!context.mounted) return;
     await showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
