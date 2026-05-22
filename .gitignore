@@ -45,3 +45,7 @@ app.*.map.json
 
 # Local scripts
 tmp_print_lines.py
+
+# Local build caches (build_enhanced.bat)
+.pub-cache/
+.gradle/

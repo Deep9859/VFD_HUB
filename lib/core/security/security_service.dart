@@ -5,10 +5,8 @@ import 'dart:typed_data';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pointycastle/export.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'isa62443_security_service.dart';
 
-/// Enhanced Security Service with ISA/IEC 62443 Compliance
-/// Implements Security Level 2 (SL-2) for Industrial Automation
+/// Secure local storage for authentication and sensitive profile data.
 class SecurityService {
   static const String _legacyKeyStorageKey = 'sec_encryption_key';
   static const String _legacyIvStorageKey = 'sec_encryption_iv';
@@ -214,94 +212,5 @@ class SecurityService {
   static Future<void> enableGuestMode() async {
     _ensureInitialized();
     await _secureStorage.write(key: _guestModeKey, value: 'true');
-  }
-
-  // ══════════════════════════════════════════════════════════════════
-  // ISA/IEC 62443 ENHANCED SECURITY METHODS
-  // ══════════════════════════════════════════════════════════════════
-
-  /// ISA/IEC 62443 compliant user authentication
-  /// Implements FR 1 (Identification and Authentication Control)
-  static Future<String> authenticateUserISA62443({
-    required String username,
-    required String password,
-    String? mfaToken,
-  }) async {
-    _ensureInitialized();
-    return await ISA62443SecurityService.authenticateUser(
-      username: username,
-      password: password,
-      mfaToken: mfaToken,
-    );
-  }
-
-  /// Check authorization per ISA/IEC 62443
-  /// Implements FR 2 (Use Control)
-  static Future<bool> authorizeAccessISA62443({
-    required String userId,
-    required String resource,
-    required String action,
-  }) async {
-    _ensureInitialized();
-    return await ISA62443SecurityService.authorizeAccess(
-      userId: userId,
-      resource: resource,
-      action: action,
-    );
-  }
-
-  /// Encrypt sensitive VFD data per ISA/IEC 62443
-  /// Implements FR 4 (Data Confidentiality)
-  static Future<String> encryptSensitiveDataISA62443(String data) async {
-    _ensureInitialized();
-    return await ISA62443SecurityService.encryptSensitiveData(data);
-  }
-
-  /// Protect communication integrity per ISA/IEC 62443
-  /// Implements FR 3 (System Integrity)
-  static Future<String> protectCommunicationISA62443(String data) async {
-    _ensureInitialized();
-    return await ISA62443SecurityService.protectCommunication(data);
-  }
-
-  /// Check rate limit per ISA/IEC 62443
-  /// Implements FR 7 (Resource Availability)
-  static Future<bool> checkRateLimitISA62443({
-    required String userId,
-    required String action,
-  }) async {
-    _ensureInitialized();
-    return await ISA62443SecurityService.checkRateLimit(
-      userId: userId,
-      action: action,
-    );
-  }
-
-  /// Get audit logs per ISA/IEC 62443
-  /// Implements FR 6 (Timely Response to Events)
-  static Future<List<Map<String, dynamic>>> getAuditLogsISA62443({
-    DateTime? startDate,
-    DateTime? endDate,
-    String? eventType,
-  }) async {
-    _ensureInitialized();
-    return await ISA62443SecurityService.getAuditLogs(
-      startDate: startDate,
-      endDate: endDate,
-      eventType: eventType,
-    );
-  }
-
-  /// Verify all security functions per ISA/IEC 62443
-  /// Implements FR 3.3 (Security Functionality Verification)
-  static Future<Map<String, bool>> verifySecurityFunctionsISA62443() async {
-    _ensureInitialized();
-    return await ISA62443SecurityService.verifySecurityFunctions();
-  }
-
-  /// Get cryptographic information per ISA/IEC 62443
-  static Future<Map<String, String>> getCryptographicInfoISA62443() async {
-    _ensureInitialized();
-    return await ISA62443SecurityService.getCryptographicInfo();
   }
 }

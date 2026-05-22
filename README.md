@@ -98,59 +98,21 @@ flutter pub run flutter_launcher_icons
 ```
 lib/
 ├── core/
-│   ├── exceptions/
-│   │   └── vfd_exceptions.dart
-│   ├── security/
-│   │   ├── input_validation_service.dart
-│   │   ├── isa62443_security_service.dart
-│   │   └── security_service.dart
-│   └── theme/
-│       └── app_theme.dart
+│   ├── exceptions/vfd_exceptions.dart
+│   ├── security/          # PBKDF2 auth + secure storage
+│   ├── services/          # logging, units, voice, widget channel
+│   └── theme/app_theme.dart
 ├── data/
-│   ├── database/
-│   │   └── database_helper.dart
-│   ├── datasources/
-│   │   ├── vendor_models_data.dart          # 200+ VFD models
-│   │   ├── vendor_ratings_data.dart         # Power ratings (kW/HP)
-│   │   ├── protocol_cards_data.dart         # Protocol & comm cards
-│   │   ├── vfd_parameters_data.dart         # VFD parameters
-│   │   ├── fault_codes_data.dart            # Fault codes
-│   │   └── [vendor]_manual_links.dart       # Manual links (19 vendors)
-│   └── models/
-│       ├── vendor_model.dart
-│       ├── vfd_model.dart
-│       ├── vfd_parameter.dart
-│       ├── protocol_model.dart
-│       ├── vfd_manual.dart
-│       ├── vfd_drawing.dart
-│       └── vfd_fault.dart
-├── l10n/
-│   ├── app_en.arb                          # English translations
-│   └── app_hi.arb                          # Hindi translations
+│   ├── database/database_helper.dart
+│   ├── datasources/       # vendors, ratings, faults, manuals, static data
+│   ├── models/
+│   └── services/manual_manager_service.dart
+├── l10n/                  # en, hi, es, fr, de, zh
 ├── presentation/
 │   ├── auth/
-│   │   ├── login_screen.dart
-│   │   └── signup_screen.dart
 │   ├── providers/
-│   │   ├── auth_provider.dart
-│   │   ├── vfd_provider.dart
-│   │   ├── theme_provider.dart
-│   │   └── locale_provider.dart
-│   ├── screens/
-│   │   ├── home_screen.dart                # Vendor flow + parameter list
-│   │   ├── smart_search_screen.dart        # Model search and filters
-│   │   ├── communication_card_screen.dart  # Protocol & card selection
-│   │   ├── fault_lookup_screen.dart        # Fault code search
-│   │   ├── about_screen.dart
-│   │   └── pdf_viewer_screen.dart
+│   ├── screens/           # home, search, QR, calculators, faults, etc.
 │   └── widgets/
-│       ├── vendor_card.dart
-│       ├── vendor_avatar.dart
-│       ├── model_list.dart
-│       ├── modern_dropdown.dart
-│       ├── parameter_editor.dart
-│       ├── drawing_section.dart
-│       └── manual_section.dart
 └── main.dart
 ```
 
@@ -191,84 +153,14 @@ lib/
 - **flutter_secure_storage** - Secure data storage
 - **crypto** - Password hashing
 - **pointycastle** - Encryption
-- **ISA/IEC 62443-3-3** - Industrial cybersecurity standard
+- **crypto / pointycastle** - Password hashing
 
-## 🔒 Security Implementation
+## 🔒 Security
 
-### ISA/IEC 62443-3-3 Compliance
-
-This app implements **Security Level 2 (SL-2)** of the ISA/IEC 62443-3-3 industrial cybersecurity standard, providing protection against intentional violation using simple means.
-
-#### Security Level 2 (SL-2) Features:
-
-**FR 1: Identification and Authentication Control (IAC)**
-- ✅ Unique user identification and authentication
-- ✅ Password strength requirements (12+ chars, uppercase, lowercase, numbers, special chars)
-- ✅ PBKDF2 password hashing with salt
-- ✅ Secure session token generation
-- ✅ Device fingerprinting and authentication
-- ✅ Multi-factor authentication support
-
-**FR 2: Use Control (UC)**
-- ✅ Role-based authorization (Admin, Engineer, Operator, Viewer)
-- ✅ Authorization matrix enforcement
-- ✅ Access attempt logging
-- ✅ Wireless security (WPA3/WPA2-Enterprise)
-
-**FR 3: System Integrity (SI)**
-- ✅ Communication integrity protection (HMAC-SHA256)
-- ✅ Malicious code detection
-- ✅ Input validation and sanitization
-- ✅ Security function verification
-
-**FR 4: Data Confidentiality (DC)**
-- ✅ AES-256-CBC encryption for sensitive data
-- ✅ Secure data storage with classification
-- ✅ Cryptographic key management
-- ✅ Data-at-rest encryption
-
-**FR 5: Restricted Data Flow (RDF)**
-- ✅ Network segmentation configuration
-- ✅ Zone boundary protection
-- ✅ Protocol validation between zones
-
-**FR 6: Timely Response to Events (TRE)**
-- ✅ Comprehensive audit logging
-- ✅ Continuous security monitoring
-- ✅ Security event detection and alerting
-- ✅ Log filtering and accessibility
-
-**FR 7: Resource Availability (RA)**
-- ✅ Denial of Service (DoS) protection
-- ✅ Rate limiting (10 requests/minute)
-- ✅ Resource usage monitoring
-- ✅ System availability management
-
-### Cryptographic Standards:
-
-| Component | Algorithm | Key Size |
-|-----------|-----------|----------|
-| Encryption | AES-256-CBC | 256-bit |
-| Hashing | SHA-256 | 256-bit |
-| Password Hashing | PBKDF2 | 100,000 iterations |
-| HMAC | HMAC-SHA256 | 256-bit |
-| Random Generation | Cryptographically Secure PRNG | - |
-
-### Authorization Matrix:
-
-| Role | Read | Write | Delete | Configure |
-|------|------|-------|--------|----------|
-| **Admin** | ✅ | ✅ | ✅ | ✅ |
-| **Engineer** | ✅ | ✅ | ❌ | ✅ |
-| **Operator** | ✅ | ✅ | ❌ | ❌ |
-| **Viewer** | ✅ | ❌ | ❌ | ❌ |
-
-### Security Compliance:
-- **Standard:** ISA/IEC 62443-3-3
-- **Security Level:** SL-2 (Security Level 2)
-- **Target:** Industrial Automation Systems
-- **Scope:** VFD Parameter Management
-- **Version:** 1.0.0
+- PBKDF2 password hashing (100k iterations) with per-user salt
+- `flutter_secure_storage` for tokens and credentials
+- Input validation and sanitization (`input_validation_service.dart`)
+- 12+ character password policy on signup
 
 ### Features
 - **flutter_pdfview** - PDF viewing
@@ -613,8 +505,7 @@ This project is private and proprietary.
 - **Test Coverage:** 90%+ of core business logic
 - **Conversion Categories:** 13 categories
 - **Lines of Code:** 15,000+
-- **Security Standard:** ISA/IEC 62443-3-3 (SL-2)
-- **Security Features:** 7 Foundational Requirements (FR 1-7)
+- **Security:** PBKDF2 + secure local storage
 - **Completion Status:** 100% COMPLETE ✅
 - **Production Ready:** ✅ Optimized, tested, documented
 
