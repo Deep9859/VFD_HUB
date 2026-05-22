@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="@drawable/widget_background">
+
+    <!-- Header Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/widget_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="VFD Hub"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_power"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="-- kW"
+            android:textColor="#FFFFFFCC"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp"
+        android:background="#44FFFFFF" />
+
+    <!-- Vendor + Model -->
+    <TextView
+        android:id="@+id/widget_vendor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Select a VFD"
+        android:textColor="#FFFFFFAA"
+        android:textSize="11sp" />
+
+    <TextView
+        android:id="@+id/widget_model"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Open app to configure"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginTop="2dp" />
+
+    <!-- Tap hint -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tap to open VFD Hub"
+        android:textColor="#FFFFFF88"
+        android:textSize="10sp"
+        android:layout_marginTop="6dp" />
+
+</LinearLayout>

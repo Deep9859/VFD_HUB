@@ -1,0 +1,138 @@
+{
+  "appTitle": "VFD Hub",
+  "selectVendor": "विक्रेता चुनें",
+  "selectModel": "मॉडल चुनें",
+  "selectPowerRating": "पावर रेटिंग चुनें",
+  "selectVoltage": "सप्लाई वोल्टेज चुनें",
+  "vendor": "विक्रेता",
+  "model": "मॉडल",
+  "powerRatingLabel": "पावर रेटिंग (kW) — 3-फेज़",
+  "supplyVoltage": "सप्लाई वोल्टेज",
+  "phase3": "3-फेज़",
+  "phase1": "1-फेज़",
+  "parameters": "पैरामीटर",
+  "vfdParameters": "वीएफडी पैरामीटर",
+  "communicationParameters": "कम्युनिकेशन पैरामीटर",
+  "drawings": "ड्राइंग",
+  "manuals": "मैनुअल",
+  "faultCodeLookup": "फॉल्ट कोड लुकअप",
+  "searchParameters": "कोड या नाम से पैरामीटर खोजें",
+  "selectVendorPrompt": "फॉल्ट कोड देखने के लिए विक्रेता चुनें",
+  "searchByCodeOrDescription": "एरर कोड या विवरण से खोजें",
+  "noFaultCodes": "इस विक्रेता के लिए कोई फॉल्ट कोड नहीं मिला",
+  "noSearchResults": "आपकी खोज से कोई फॉल्ट कोड मेल नहीं खाता",
+  "solution": "समाधान",
+  "severity": "गंभीरता",
+  "clearAllValues": "सभी मान साफ़ करें",
+  "changeLanguage": "भाषा बदलें",
+  "toggleTheme": "थीम बदलें",
+  "about": "ऐप के बारे में",
+  "signOut": "साइन आउट",
+  "guest": "अतिथि",
+  "signOutConfirm": "क्या आप वाकई साइन आउट करना चाहते हैं?",
+  "cancel": "रद्द करें",
+  "clear": "साफ़ करें",
+  "clearValuesConfirm": "यह सभी पैरामीटर मानों को डिफ़ॉल्ट पर रीसेट कर देगा। जारी रखें?",
+  "allValuesCleared": "सभी पैरामीटर मान साफ़ कर दिए गए",
+  "controlWiringType": "कंट्रोल वायरिंग प्रकार",
+  "communication": "कम्युनिकेशन",
+  "hardWire": "हार्ड वायर",
+  "communicationSub": "मोडबस / प्रोफ़ीबस / ईथरनेट",
+  "hardWireSub": "एनालॉग / डिजिटल आई/ओ",
+  "step1SelectProtocol": "चरण 1 — प्रोटोकॉल चुनें",
+  "selectCommProtocol": "कम्युनिकेशन प्रोटोकॉल चुनें",
+  "noProtocols": "इस विक्रेता के लिए कोई प्रोटोकॉल उपलब्ध नहीं है",
+  "step2SelectCommCard": "चरण 2 — कम्युनिकेशन कार्ड चुनें",
+  "selectCommCard": "कम्युनिकेशन कार्ड चुनें",
+  "installCardTip": "कम्युनिकेशन पैरामीटर कॉन्फ़िगर करने से पहले {card} कार्ड को VFD विकल्प स्लॉट में स्थापित करें।",
+  "@installCardTip": {
+    "placeholders": {
+      "card": {"type": "String"}
+    }
+  },
+  "protocolTypeInfo": "प्रोटोकॉल: {protocol}  •  प्रकार: {type}",
+  "@protocolTypeInfo": {
+    "placeholders": {
+      "protocol": {"type": "String"},
+      "type": {"type": "String"}
+    }
+  },
+  "protocolParamsCount": "{count} पैरामीटर — {protocol} सक्षम करें",
+  "@protocolParamsCount": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "protocol": {"type": "String"}
+    }
+  },
+  "vfdParamsCount": "{groups} समूहों में {count} पैरामीटर",
+  "@vfdParamsCount": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "groups": {"type": "int"}
+    }
+  },
+  "noParametersFound": "इस मॉडल के लिए कोई पैरामीटर नहीं मिला",
+  "noParametersSub": "पैरामीटर डेटाबेस के माध्यम से जोड़े जा सकते हैं",
+  "noManuals": "अभी तक कोई मैनुअल नहीं",
+  "noManualsSub": "PDF या TXT मैनुअल अपलोड करने के लिए \"जोड़ें\" पर टैप करें",
+  "noDrawings": "अभी तक कोई ड्राइंग अपलोड नहीं की गई",
+  "uploadDrawing": "ड्राइंग अपलोड करें",
+  "powerRange3Phase": "3-फेज़ पावर रेंज",
+  "min": "न्यूनतम",
+  "max": "अधिकतम",
+  "powerOptionsAvailable": "{count} पावर विकल्प उपलब्ध • 3-फेज़ AC सप्लाई",
+  "@powerOptionsAvailable": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "ready": "तैयार",
+  "motorSpecsTitle": "मोटर रेटेड डेटा",
+  "motorSpecsSub": "VFD पैरामीटर स्वतः भरने के लिए मोटर नेमप्लेट (रेटेड) डेटा दर्ज करें।",
+  "motorPower": "मोटर रेटेड पावर (kW)",
+  "ratedVoltage": "मोटर रेटेड वोल्टेज (V)",
+  "ratedCurrent": "मोटर रेटेड करंट (A)",
+  "ratedSpeed": "मोटर रेटेड गति (RPM)",
+  "baseFrequency": "मोटर रेटेड आवृत्ति (Hz)",
+  "connection": "कनेक्शन",
+  "star": "स्टार",
+  "delta": "डेल्टा",
+  "autoFillParameters": "पैरामीटर स्वतः भरें",
+  "skip": "छोड़ें",
+  "motorSpecsApplied": "मिलान पैरामीटर पर मोटर विनिर्देश लागू किए गए",
+  "aboutTitle": "ऐप के बारे में",
+  "appSubtitle": "आपका VFD पैरामीटर प्रबंधन हब",
+  "appDescription": "औद्योगिक अनुप्रयोगों में उपयोग किए जाने वाले वेरिएबल फ़्रीक्वेंसी ड्राइव (VFDs) को कॉन्फ़िगर और प्रबंधित करने के लिए एक व्यापक उपकरण।",
+  "keyFeatures": "मुख्य विशेषताएँ",
+  "featureMultiVendor": "बहु-विक्रेता VFD समर्थन",
+  "featureParamConfig": "पैरामीटर कॉन्फ़िगरेशन और खोज",
+  "featureFaultLookup": "फॉल्ट कोड लुकअप और निदान",
+  "featurePdfViewer": "इन-ऐप PDF मैनुअल दर्शक",
+  "featureProtocolSetup": "कम्युनिकेशन प्रोटोकॉल सेटअप",
+  "featureTheme": "डार्क/लाइट थीम समर्थन",
+  "featureMultiLanguage": "बहु-भाषा समर्थन",
+  "developer": "डेवलपर",
+  "developerName": "अमरदीप कुमार द्वारा विकसित",
+  "builtWithLove": "औद्योगिक स्वचालन के लिए प्यार से बनाया गया",
+  "database": "डेटाबेस",
+  "databaseInfo": "SQLite डेटाबेस v11",
+  "databaseStats": "21 विक्रेता • 300+ मॉडल • फॉल्ट कोड",
+  "howToUseTitle": "ऐप का उपयोग कैसे करें",
+  "appGuideNote": "मुख्य VFD चयन प्रवाह का पालन करें और पैरामीटर कॉन्फ़िगर करने से पहले कम्युनिकेशन विकल्पों की समीक्षा करें।",
+  "howToUseStep1": "सटीक VFD का निर्धारण करने के लिए विक्रेता, मॉडल, पावर रेटिंग और फिर वोल्टेज चुनें।",
+  "howToUseStep2": "यदि VFD प्रोटोकॉल-आधारित कम्युनिकेशन उपयोग करेगा तो कम्युनिकेशन, अन्यथा हार्ड वायर मोड चुनें।",
+  "howToUseStep3": "कम्युनिकेशन के लिए, सही कम्युनिकेशन पैरामीटर लोड करने के लिए प्रोटोकॉल और कम्युनिकेशन कार्ड चुनें।",
+  "howToUseStep4": "पैरामीटर एडिटर में VFD पैरामीटर संपादित और सेव करें; सेव किए गए मान मॉडल के अनुसार स्टोर होते हैं।",
+  "howToUseStep5": "जहां उपलब्ध हो, रेटेड मोटर और वायरिंग पैरामीटर स्वचालित रूप से भरने के लिए ड्राइंग या मोटर डेटा अपलोड करें।",
+  "exactParamsTitle": "सटीक पैरामीटर चाहिए?",
+  "exactParamsSub": "अपना पैनल ड्राइंग अपलोड करें — मैनुअल डेटाबेस में पहले से है।",
+  "uploadDrawingAction": "ड्राइंग अपलोड करें",
+  "copyright": "© 2026 VFD Hub",
+  "versionLabel": "संस्करण {version} ({build})",
+  "@versionLabel": {
+    "placeholders": {
+      "version": {"type": "String"},
+      "build": {"type": "String"}
+    }
+  }
+}

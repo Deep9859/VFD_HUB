@@ -1,0 +1,138 @@
+{
+  "appTitle": "VFD Hub",
+  "selectVendor": "Select Vendor",
+  "selectModel": "Select Model",
+  "selectPowerRating": "Select Power Rating",
+  "selectVoltage": "Select Supply Voltage",
+  "vendor": "Vendor",
+  "model": "Model",
+  "powerRatingLabel": "Power Rating (kW) — 3-Phase",
+  "supplyVoltage": "Supply Voltage",
+  "phase3": "3-Phase",
+  "phase1": "1-Phase",
+  "parameters": "Parameters",
+  "vfdParameters": "VFD Parameters",
+  "communicationParameters": "Communication Parameters",
+  "drawings": "Drawings",
+  "manuals": "Manuals",
+  "faultCodeLookup": "Fault Code Lookup",
+  "searchParameters": "Search parameters by code or name",
+  "selectVendorPrompt": "Please select a vendor to view fault codes",
+  "searchByCodeOrDescription": "Search by error code or description",
+  "noFaultCodes": "No fault codes found for this vendor",
+  "noSearchResults": "No fault codes match your search",
+  "solution": "Solution",
+  "severity": "Severity",
+  "clearAllValues": "Clear All Values",
+  "changeLanguage": "Change Language",
+  "toggleTheme": "Toggle Theme",
+  "about": "About",
+  "signOut": "Sign Out",
+  "guest": "Guest",
+  "signOutConfirm": "Are you sure you want to sign out?",
+  "cancel": "Cancel",
+  "clear": "Clear",
+  "clearValuesConfirm": "This will reset all parameter values back to defaults. Continue?",
+  "allValuesCleared": "All parameter values cleared",
+  "controlWiringType": "Control Wiring Type",
+  "communication": "Communication",
+  "hardWire": "Hard Wire",
+  "communicationSub": "Modbus / Profibus / EtherNet",
+  "hardWireSub": "Analog / Digital I/O",
+  "step1SelectProtocol": "Step 1 — Select Protocol",
+  "selectCommProtocol": "Select Communication Protocol",
+  "noProtocols": "No protocols available for this vendor",
+  "step2SelectCommCard": "Step 2 — Select Communication Card",
+  "selectCommCard": "Select Communication Card",
+  "installCardTip": "Install {card} card into the VFD option slot before configuring communication parameters.",
+  "@installCardTip": {
+    "placeholders": {
+      "card": {"type": "String"}
+    }
+  },
+  "protocolTypeInfo": "Protocol: {protocol}  •  Type: {type}",
+  "@protocolTypeInfo": {
+    "placeholders": {
+      "protocol": {"type": "String"},
+      "type": {"type": "String"}
+    }
+  },
+  "protocolParamsCount": "{count} parameters — enable {protocol}",
+  "@protocolParamsCount": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "protocol": {"type": "String"}
+    }
+  },
+  "vfdParamsCount": "{count} parameters across {groups} groups",
+  "@vfdParamsCount": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "groups": {"type": "int"}
+    }
+  },
+  "noParametersFound": "No parameters found for this model",
+  "noParametersSub": "Parameters can be added via the database",
+  "noManuals": "No manuals yet",
+  "noManualsSub": "Tap \"Add\" to upload a PDF or TXT manual",
+  "noDrawings": "No drawings uploaded yet",
+  "uploadDrawing": "Upload Drawing",
+  "powerRange3Phase": "3-Phase Power Range",
+  "min": "Min",
+  "max": "Max",
+  "powerOptionsAvailable": "{count} power options available • 3-Phase AC supply",
+  "@powerOptionsAvailable": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "ready": "Ready",
+  "motorSpecsTitle": "Motor Rated Data",
+  "motorSpecsSub": "Enter motor nameplate (rated) data to auto-fill VFD parameters.",
+  "motorPower": "Motor Rated Power (kW)",
+  "ratedVoltage": "Motor Rated Voltage (V)",
+  "ratedCurrent": "Motor Rated Current (A)",
+  "ratedSpeed": "Motor Rated Speed (RPM)",
+  "baseFrequency": "Motor Rated Frequency (Hz)",
+  "connection": "Connection",
+  "star": "Star",
+  "delta": "Delta",
+  "autoFillParameters": "Auto-fill Parameters",
+  "skip": "Skip",
+  "motorSpecsApplied": "Motor specs applied to matching parameters",
+  "aboutTitle": "About",
+  "appSubtitle": "Your VFD Parameter Management Hub",
+  "appDescription": "A comprehensive tool for configuring and managing Variable Frequency Drives (VFDs) used in industrial applications.",
+  "keyFeatures": "Key Features",
+  "featureMultiVendor": "Multi-vendor VFD support",
+  "featureParamConfig": "Parameter configuration & search",
+  "featureFaultLookup": "Fault code lookup & diagnostics",
+  "featurePdfViewer": "In-app PDF manual viewer",
+  "featureProtocolSetup": "Communication protocol setup",
+  "featureTheme": "Dark/Light theme support",
+  "featureMultiLanguage": "Multi-language support",
+  "developer": "Developer",
+  "developerName": "Developed by Amardeep Kumar",
+  "builtWithLove": "Built with love for industrial automation",
+  "database": "Database",
+  "databaseInfo": "SQLite Database v11",
+  "databaseStats": "21 Vendors • 300+ Models • Fault Codes",
+  "howToUseTitle": "How to use the app",
+  "appGuideNote": "Follow the main VFD selection flow and review communication choices before configuring parameters.",
+  "howToUseStep1": "Select Vendor, then Model, then Power Rating, and finally Voltage to resolve the exact VFD.",
+  "howToUseStep2": "Choose Communication or Hard Wire mode depending on whether the VFD will use protocol-based comms.",
+  "howToUseStep3": "For Communication, select Protocol and Comm Card so the app can load the right communication parameters.",
+  "howToUseStep4": "Edit and save VFD parameters in the parameter editor; saved values are stored per model.",
+  "howToUseStep5": "Upload a drawing or motor data to auto-fill rated motor and wiring parameters where available.",
+  "exactParamsTitle": "Want exact parameters?",
+  "exactParamsSub": "Upload your panel drawing — manual is already in the database.",
+  "uploadDrawingAction": "Upload Drawing",
+  "copyright": "© 2026 VFD Hub",
+  "versionLabel": "Version {version} ({build})",
+  "@versionLabel": {
+    "placeholders": {
+      "version": {"type": "String"},
+      "build": {"type": "String"}
+    }
+  }
+}

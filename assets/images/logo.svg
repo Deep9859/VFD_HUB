@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="240" fill="#2196F3" opacity="0.1"/>
+  
+  <!-- Outer Circle Border -->
+  <circle cx="256" cy="256" r="240" fill="none" stroke="#2196F3" stroke-width="8"/>
+  
+  <!-- Hub Connection Network -->
+  <!-- Center Node (V) -->
+  <circle cx="256" cy="256" r="60" fill="#2196F3"/>
+  <text x="256" y="280" font-family="Arial, sans-serif" font-size="64" font-weight="bold" fill="white" text-anchor="middle">V</text>
+  
+  <!-- Top Node -->
+  <circle cx="256" cy="120" r="30" fill="#FF6F00"/>
+  <line x1="256" y1="196" x2="256" y2="150" stroke="#9C27B0" stroke-width="6"/>
+  
+  <!-- Top Right Node -->
+  <circle cx="370" cy="180" r="30" fill="#FF6F00"/>
+  <line x1="300" y1="220" x2="345" y2="195" stroke="#9C27B0" stroke-width="6"/>
+  
+  <!-- Bottom Right Node -->
+  <circle cx="370" cy="332" r="30" fill="#FF6F00"/>
+  <line x1="300" y1="292" x2="345" y2="317" stroke="#9C27B0" stroke-width="6"/>
+  
+  <!-- Bottom Node -->
+  <circle cx="256" cy="392" r="30" fill="#FF6F00"/>
+  <line x1="256" y1="316" x2="256" y2="362" stroke="#9C27B0" stroke-width="6"/>
+  
+  <!-- Bottom Left Node -->
+  <circle cx="142" cy="332" r="30" fill="#FF6F00"/>
+  <line x1="212" y1="292" x2="167" y2="317" stroke="#9C27B0" stroke-width="6"/>
+  
+  <!-- Top Left Node -->
+  <circle cx="142" cy="180" r="30" fill="#FF6F00"/>
+  <line x1="212" y1="220" x2="167" y2="195" stroke="#9C27B0" stroke-width="6"/>
+  
+  <!-- Lightning bolt in center -->
+  <path d="M 256 230 L 246 256 L 256 256 L 246 282 L 266 256 L 256 256 Z" fill="#FFD700" stroke="#FF6F00" stroke-width="2"/>
+</svg>
