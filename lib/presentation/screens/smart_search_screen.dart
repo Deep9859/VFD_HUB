@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/datasources/vfd_static_data.dart';
+import '../../data/models/vfd_search_hit.dart';
 import '../widgets/app_card.dart';
 
 class SmartSearchScreen extends StatefulWidget {
@@ -12,7 +13,7 @@ class SmartSearchScreen extends StatefulWidget {
 
 class _SmartSearchScreenState extends State<SmartSearchScreen> {
   final _searchController = TextEditingController();
-  List<VfdModelData> _results = [];
+  List<VfdSearchHit> _results = [];
   String? _selectedVendor;
   String? _selectedStatus;
   String? _selectedApp;
@@ -27,7 +28,7 @@ class _SmartSearchScreenState extends State<SmartSearchScreen> {
 
   void _performSearch() {
     final query = _searchController.text.toLowerCase();
-    final List<VfdModelData> results = [];
+    final List<VfdSearchHit> results = [];
 
     for (var vendor in VfdStaticData.vendorNames) {
       final models = VfdStaticData.getModelsByVendor(vendor);
@@ -45,7 +46,7 @@ class _SmartSearchScreenState extends State<SmartSearchScreen> {
               !model.app.toLowerCase().contains(query)) continue;
         }
 
-        results.add(model);
+        results.add(VfdSearchHit(vendor: vendor, model: model));
       }
     }
 
@@ -100,7 +101,7 @@ class _SmartSearchScreenState extends State<SmartSearchScreen> {
                 ? _buildEmptyState()
                 : ListView.builder(
                     itemCount: _results.length,
-                    itemBuilder: (ctx, i) => _buildResultCard(_results[i]),
+                    itemBuilder: (ctx, i) => _buildResultCard(_results[i], i),
                   ),
           ),
         ],
@@ -108,12 +109,16 @@ class _SmartSearchScreenState extends State<SmartSearchScreen> {
     );
   }
 
-  Widget _buildResultCard(VfdModelData model) {
+  Widget _buildResultCard(VfdSearchHit hit, int index) {
+    final model = hit.model;
     final statusPrimary = model.status == 'Current' ? Colors.green : Colors.orange;
-    return AppCard(
+    return InkWell(
+      onTap: () => Navigator.pop(context, hit),
+      borderRadius: BorderRadius.circular(16),
+      child: AppCard(
       icon: Icons.devices,
       title: model.name,
-      subtitle: '${model.minKw} - ${model.maxKw} kW • ${model.app}',
+      subtitle: '${hit.vendor} • ${model.minKw}-${model.maxKw} kW',
       backgroundColor: statusPrimary.withOpacity(0.08),
       accentColor: statusPrimary,
       child: Row(
@@ -142,10 +147,11 @@ class _SmartSearchScreenState extends State<SmartSearchScreen> {
           const SizedBox(width: 12),
           IconButton(
             icon: const Icon(Icons.arrow_forward_ios, size: 18),
-            onPressed: () => Navigator.pop(context, model),
+            onPressed: () => Navigator.pop(context, hit),
           ),
         ],
       ),
+    ),
     );
   }
 

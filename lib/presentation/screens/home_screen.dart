@@ -20,6 +20,9 @@ import 'manual_import_screen.dart';
 import 'qr_scanner_screen.dart';
 import 'qr_generator_screen.dart';
 import 'smart_search_screen.dart';
+import '../../data/models/vfd_search_hit.dart';
+import '../../core/services/permissions_service.dart';
+import '../../core/services/widget_service.dart';
 import 'calculation_tools_screen.dart';
 import 'unit_converter_screen.dart';
 import 'welcome_screen.dart';
@@ -107,11 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.search),
             tooltip: 'Smart Search',
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const SmartSearchScreen()),
-            ),
+            onPressed: () => _openSmartSearch(context),
           ),
           // QR Scanner Button
           IconButton(
@@ -133,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
             builder: (context, localeProvider, _) => IconButton(
               icon: const Icon(Icons.language),
               tooltip: l10n.changeLanguage,
-              onPressed: () => localeProvider.toggleLanguage(),
+              onPressed: () => _showLanguagePicker(context, localeProvider),
             ),
           ),
           Consumer<ThemeProvider>(
@@ -192,6 +191,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         builder: (context) => const ManualImportScreen(),
                       ),
                     );
+                  } else if (value == 'recent') {
+                    _showRecentConfigs(context);
                   } else if (value == 'logout') {
                     _showLogoutDialog(context);
                   }
@@ -247,6 +248,16 @@ class _HomeScreenState extends State<HomeScreen> {
                             size: 20, color: AppTheme.primary),
                         SizedBox(width: 8),
                         Text('Generate QR Code'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'recent',
+                    child: Row(
+                      children: [
+                        Icon(Icons.history, size: 20, color: AppTheme.primary),
+                        SizedBox(width: 8),
+                        Text('Recent VFDs'),
                       ],
                     ),
                   ),
@@ -307,6 +318,25 @@ class _HomeScreenState extends State<HomeScreen> {
                 final v = provider.vendors.where((v) => v.name.toLowerCase().contains(command.data!)).toList();
                 if (v.isNotEmpty) provider.selectVendor(v.first);
               }
+              break;
+            case CommandType.openSearch:
+              _openSmartSearch(context);
+              break;
+            case CommandType.showManuals:
+              if (provider.manuals.isNotEmpty) {
+                provider.openManualFile(context, provider.manuals.first);
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ManualImportScreen()),
+                );
+              }
+              break;
+            case CommandType.compare:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const VFDComparisonScreen()),
+              );
               break;
             default:
               break;
@@ -1856,67 +1886,191 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // QR Scanner
-  Future<void> _openQRScanner(BuildContext context) async {
-    final navigator = Navigator.of(context);
+  Future<void> _showRecentConfigs(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final recent = await HomeScreenWidgetService.getRecentConfigs();
+    if (!mounted) return;
+
+    if (recent.isEmpty) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('No recent VFD configurations yet')),
+      );
+      return;
+    }
+
+    await showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'Recent VFDs',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+            ...recent.map(
+              (item) => ListTile(
+                leading: const Icon(Icons.history),
+                title: Text('${item.vendorName} ${item.modelName}'),
+                subtitle: Text(
+                  item.powerRating.isNotEmpty
+                      ? '${item.powerRating} kW'
+                      : 'Tap to load',
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  final power = double.tryParse(item.powerRating);
+                  _applyVendorModelSelection(
+                    vendorName: item.vendorName,
+                    modelName: item.modelName,
+                    powerKw: power,
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showLanguagePicker(
+    BuildContext context,
+    LocaleProvider localeProvider,
+  ) {
+    return showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'Select Language',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+            ...LocaleProvider.supportedLocales.map((locale) {
+              final selected = localeProvider.locale == locale;
+              return ListTile(
+                leading: Icon(
+                  selected ? Icons.check_circle : Icons.circle_outlined,
+                  color: selected ? AppTheme.primary : null,
+                ),
+                title: Text(localeProvider.getLanguageName(locale.languageCode)),
+                onTap: () {
+                  localeProvider.setLocale(locale);
+                  Navigator.pop(ctx);
+                },
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openSmartSearch(BuildContext context) async {
+    final hit = await Navigator.push<VfdSearchHit>(
+      context,
+      MaterialPageRoute(builder: (_) => const SmartSearchScreen()),
+    );
+    if (!mounted || hit == null) return;
+    await _applyVendorModelSelection(
+      vendorName: hit.vendor,
+      modelName: hit.model.name,
+    );
+  }
+
+  Future<void> _applyVendorModelSelection({
+    required String vendorName,
+    required String modelName,
+    double? powerKw,
+  }) async {
+    if (!mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     final provider = context.read<VfdProvider>();
 
-    final result = await navigator.push<Map<String, dynamic>>(
-      MaterialPageRoute(
-        builder: (context) => const QRScannerScreen(),
-      ),
-    );
-
-    if (result != null && result['success'] == true && mounted) {
-      final vendor = result['vendor'] as String;
-      final model = result['model'] as String;
-
-      // Find vendor
-      final vendorObj = provider.vendors.firstWhere(
-        (v) => v.name.toLowerCase() == vendor.toLowerCase(),
-        orElse: () => provider.vendors.first,
-      );
-
-      // Load vendor
-      await provider.selectVendor(vendorObj);
-
-      // Check if model exists
-      if (provider.modelNames.contains(model)) {
-        await provider.selectModelName(model);
-
-        // If power rating provided, select it
-        if (result['power'] != null) {
-          final power = result['power'] as double;
-          if (provider.powerRatings.contains(power)) {
-            await provider.selectPowerRating(power);
-          }
-        }
-
-        if (mounted) {
-          messenger.showSnackBar(
-            SnackBar(
-              content: Text('VFD Loaded: $vendor $model'),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        }
-      } else {
-        if (mounted) {
-          messenger.showSnackBar(
-            SnackBar(
-              content: Text('Model "$model" not found for $vendor'),
-              backgroundColor: Colors.orange,
-              action: SnackBarAction(
-                label: 'OK',
-                textColor: Colors.white,
-                onPressed: () {},
-              ),
-            ),
-          );
-        }
+    Vendor? vendorObj;
+    for (final v in provider.vendors) {
+      if (v.name.toLowerCase() == vendorName.toLowerCase()) {
+        vendorObj = v;
+        break;
       }
     }
+
+    if (vendorObj == null) {
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('Vendor "$vendorName" not found'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      return;
+    }
+
+    await provider.selectVendor(vendorObj);
+
+    if (!provider.modelNames.contains(modelName)) {
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('Model "$modelName" not found for $vendorName'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      return;
+    }
+
+    await provider.selectModelName(modelName);
+
+    if (powerKw != null && provider.powerRatings.contains(powerKw)) {
+      await provider.selectPowerRating(powerKw);
+    }
+
+    if (mounted) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('Loaded: $vendorName $modelName'),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  // QR Scanner
+  Future<void> _openQRScanner(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+
+    if (!await PermissionsService.ensureCamera()) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Camera permission is required to scan QR codes'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final result = await navigator.push<Map<String, dynamic>>(
+      MaterialPageRoute(builder: (_) => const QRScannerScreen()),
+    );
+
+    if (!mounted || result == null || result['success'] != true) return;
+    await _applyVendorModelSelection(
+      vendorName: result['vendor'] as String,
+      modelName: result['model'] as String,
+      powerKw: result['power'] as double?,
+    );
   }
 }

@@ -1,6 +1,6 @@
 # VFD Hub — Google Play Store Launch Guide
 
-## Current readiness: ~72% (store listing + signing still required)
+## Current readiness: ~88% app / ~75% store listing (signing + assets still required)
 
 Code-side Play prep is in place (auth gate, privacy policy screen, release signing template). You still need a Google Play Console account, store assets, and an upload keystore.
 

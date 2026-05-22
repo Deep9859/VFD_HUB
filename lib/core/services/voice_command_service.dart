@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'permissions_service.dart';
 
 class VoiceCommandService {
   static final VoiceCommandService _instance = VoiceCommandService._internal();
@@ -15,9 +16,10 @@ class VoiceCommandService {
     _isInitialized = await _speech.initialize();
   }
 
-  Future<void> startListening(Function(String) onResult) async {
+  Future<bool> startListening(Function(String) onResult) async {
     if (!_isInitialized) await initialize();
-    if (_isListening) return;
+    if (_isListening) return false;
+    if (!await PermissionsService.ensureMicrophone()) return false;
 
     _isListening = true;
     await _speech.listen(
@@ -30,6 +32,7 @@ class VoiceCommandService {
       listenFor: const Duration(seconds: 10),
       pauseFor: const Duration(seconds: 3),
     );
+    return true;
   }
 
   Future<void> stopListening() async {
@@ -45,9 +48,16 @@ class VoiceCommandService {
   VoiceCommand? parseCommand(String text) {
     text = text.toLowerCase().trim();
 
+    if (text.contains('search') || text.contains('find')) {
+      return VoiceCommand(type: CommandType.openSearch);
+    }
+
     if (text.contains('show') || text.contains('open')) {
       if (text.contains('fault') || text.contains('error')) {
         return VoiceCommand(type: CommandType.showFaults);
+      }
+      if (text.contains('manual')) {
+        return VoiceCommand(type: CommandType.showManuals);
       }
       if (text.contains('calculator')) {
         return VoiceCommand(type: CommandType.showCalculator);
@@ -65,15 +75,22 @@ class VoiceCommandService {
       return VoiceCommand(type: CommandType.scanQR);
     }
 
+    if (text.contains('compare')) {
+      return VoiceCommand(type: CommandType.compare);
+    }
+
     return null;
   }
 }
 
 enum CommandType {
+  openSearch,
   showFaults,
+  showManuals,
   showCalculator,
   selectVendor,
   scanQR,
+  compare,
 }
 
 class VoiceCommand {
@@ -118,12 +135,20 @@ class _VoiceCommandButtonState extends State<VoiceCommandButton>
       _animController.stop();
       setState(() {});
     } else {
-      await _voiceService.startListening((text) {
+      final started = await _voiceService.startListening((text) {
         final command = _voiceService.parseCommand(text);
         widget.onCommand(command);
         _animController.stop();
         setState(() {});
       });
+      if (!started && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Microphone permission is required for voice commands'),
+          ),
+        );
+        return;
+      }
       _animController.repeat();
       setState(() {});
     }
