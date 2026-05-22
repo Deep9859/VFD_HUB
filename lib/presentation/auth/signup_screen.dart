@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/security/input_validation_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
+import '../screens/home_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -230,7 +231,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
         email: _emailCtrl.text.trim(),
         password: _passCtrl.text,
       );
-      if (ok && mounted) Navigator.of(context).pop();
+      if (ok && mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          (_) => false,
+        );
+      }
     }
   }
 }

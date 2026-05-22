@@ -12,11 +12,13 @@ void main() {
   });
 
   group('VfdParamApp smoke test', () {
-    testWidgets('App launches and shows auth loading state',
+    testWidgets('App launches and shows welcome after gate',
         (WidgetTester tester) async {
       await tester.pumpWidget(const VfdParamApp());
+      await tester.pumpAndSettle();
       expect(find.text('VFD Hub'), findsOneWidget);
-      expect(find.text('Get Started'), findsOneWidget);
+      expect(find.text('Continue as Guest'), findsOneWidget);
+      expect(find.text('Sign In'), findsOneWidget);
     });
 
     testWidgets('App shows loading indicator or vendor grid on launch',

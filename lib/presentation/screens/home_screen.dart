@@ -22,6 +22,7 @@ import 'qr_generator_screen.dart';
 import 'smart_search_screen.dart';
 import 'calculation_tools_screen.dart';
 import 'unit_converter_screen.dart';
+import 'welcome_screen.dart';
 import '../widgets/app_card.dart';
 import '../../core/services/voice_command_service.dart';
 
@@ -1807,9 +1808,14 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () => Navigator.pop(ctx), child: Text(l10n.cancel)),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(ctx);
-              context.read<AuthProvider>().signOut();
+              await context.read<AuthProvider>().signOut();
+              if (!context.mounted) return;
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+                (_) => false,
+              );
             },
             child:
                 Text(l10n.signOut, style: const TextStyle(color: Colors.white)),

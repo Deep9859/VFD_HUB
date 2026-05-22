@@ -4,6 +4,7 @@ import '../../core/security/input_validation_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 import 'signup_screen.dart';
+import '../screens/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -172,7 +173,12 @@ class _LoginScreenState extends State<LoginScreen> {
             onPressed: () async {
               final auth = context.read<AuthProvider>();
               await auth.signInAsGuest();
-              if (auth.isAuthenticated && mounted) Navigator.of(context).pop();
+              if (auth.isAuthenticated && mounted) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const HomeScreen()),
+                  (_) => false,
+                );
+              }
             },
             icon: const Icon(Icons.person_outline, size: 18),
             label: const Text('Continue as Guest'),
@@ -209,7 +215,12 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailCtrl.text.trim(),
         password: _passCtrl.text,
       );
-      if (ok && mounted) Navigator.of(context).pop();
+      if (ok && mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          (_) => false,
+        );
+      }
     }
   }
 }

@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../auth/login_screen.dart';
+import '../auth/signup_screen.dart';
+import '../providers/auth_provider.dart';
 import '../widgets/app_card.dart';
 import 'home_screen.dart';
+import 'privacy_policy_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -176,7 +181,7 @@ class WelcomeScreen extends StatelessWidget {
 
                         const SizedBox(height: 56),
 
-                        // Get Started Button
+                        // Continue as Guest
                         Container(
                           width: double.infinity,
                           height: 64,
@@ -192,12 +197,7 @@ class WelcomeScreen extends StatelessWidget {
                             ],
                           ),
                           child: ElevatedButton(
-                            onPressed: () => Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const HomeScreen(),
-                              ),
-                            ),
+                            onPressed: () => _continueAsGuest(context),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.transparent,
                               shadowColor: Colors.transparent,
@@ -210,7 +210,7 @@ class WelcomeScreen extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  'Get Started',
+                                  'Continue as Guest',
                                   style: GoogleFonts.inter(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w700,
@@ -229,11 +229,64 @@ class WelcomeScreen extends StatelessWidget {
                           ),
                         ),
 
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: OutlinedButton(
+                            onPressed: () => _openLogin(context),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              side: const BorderSide(color: Colors.white70),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                            child: Text(
+                              'Sign In',
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextButton(
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const SignUpScreen(),
+                            ),
+                          ),
+                          child: Text(
+                            'Create Account',
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const PrivacyPolicyScreen(),
+                            ),
+                          ),
+                          child: Text(
+                            'Privacy Policy',
+                            style: GoogleFonts.inter(
+                              color: Colors.white.withOpacity(0.85),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
 
                         // Version Info
                         Text(
-                          'Version 2.0 • Professional Edition',
+                          'Version 1.1.0',
                           style: GoogleFonts.inter(
                             fontSize: 12,
                             color: Colors.white.withOpacity(0.6),
@@ -250,6 +303,23 @@ class WelcomeScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  static Future<void> _continueAsGuest(BuildContext context) async {
+    final auth = context.read<AuthProvider>();
+    if (!auth.isAuthenticated) {
+      await auth.signInAsGuest();
+    }
+    if (!context.mounted || !auth.isAuthenticated) return;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
+    );
+  }
+
+  static void _openLogin(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
     );
   }
 

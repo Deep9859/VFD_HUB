@@ -49,3 +49,8 @@ tmp_print_lines.py
 # Local build caches (build_enhanced.bat)
 .pub-cache/
 .gradle/
+
+# Play Store signing (never commit)
+android/key.properties
+**/*.jks
+**/*.keystore

@@ -8,7 +8,7 @@ import 'presentation/providers/vfd_provider.dart';
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/locale_provider.dart';
 import 'presentation/providers/theme_provider.dart';
-import 'presentation/screens/welcome_screen.dart';
+import 'presentation/screens/app_gate_screen.dart';
 import 'dart:io';
 
 void main() async {
@@ -56,7 +56,7 @@ class VfdParamApp extends StatelessWidget {
             Locale('zh'), // Chinese
           ],
           theme: themeProvider.themeData,
-          home: const WelcomeScreen(),
+          home: const AppGateScreen(),
         ),
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../widgets/app_card.dart';
+import 'privacy_policy_screen.dart';
 
 class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
@@ -252,6 +253,19 @@ class _AboutScreenState extends State<AboutScreen> {
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Colors.grey.shade500,
                   ),
+            ),
+
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.privacy_tip_outlined),
+              title: const Text('Privacy Policy'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const PrivacyPolicyScreen(),
+                ),
+              ),
             ),
 
             const SizedBox(height: 16),
