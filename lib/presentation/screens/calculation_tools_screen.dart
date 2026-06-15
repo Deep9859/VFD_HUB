@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/app_form_styles.dart';
 import '../../core/services/unit_conversion_service.dart';
 import '../widgets/app_card.dart';
+import '../widgets/calculation_result_box.dart';
 
 class CalculationToolsScreen extends StatefulWidget {
   const CalculationToolsScreen({super.key});
@@ -24,7 +26,7 @@ class _CalculationToolsScreenState extends State<CalculationToolsScreen> {
     {'icon': Icons.trending_down, 'name': 'Voltage Drop', 'color': AppTheme.primary},
     {'icon': Icons.power, 'name': 'Power Factor', 'color': AppTheme.primary},
     {'icon': Icons.savings, 'name': 'Energy Savings', 'color': AppTheme.primary},
-    {'icon': Icons.swap_horiz, 'name': 'HP ↔ kW', 'color': AppTheme.primary},
+    {'icon': Icons.swap_horiz, 'name': 'HP ? kW', 'color': AppTheme.primary},
     {
       'icon': Icons.playlist_add_check,
       'name': 'Commissioning',
@@ -73,7 +75,7 @@ class _CalculationToolsScreenState extends State<CalculationToolsScreen> {
 
   Widget _buildSidebar(BuildContext context) {
     return AppCard(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
       accentColor: Theme.of(context).colorScheme.primary,
       title: 'Tools',
       subtitle: 'Select a calculator',
@@ -152,7 +154,7 @@ class _CalculationToolsScreenState extends State<CalculationToolsScreen> {
             Text(
               tool['name'],
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 10),
+              style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface),
             ),
           ],
         ),
@@ -231,23 +233,21 @@ class _MotorCurrentCalculatorState extends State<MotorCurrentCalculator> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Motor Current Calculator',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text('Motor Current Calculator',
+              style: AppFormStyles.sectionTitle(context)),
           const SizedBox(height: 24),
           TextField(
             controller: _powerCtrl,
-            decoration: const InputDecoration(
+            decoration: AppFormStyles.decoration(context,
               labelText: 'Motor Power (kW)',
-              border: OutlineInputBorder(),
             ),
             keyboardType: TextInputType.number,
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _voltageCtrl,
-            decoration: const InputDecoration(
+            decoration: AppFormStyles.decoration(context,
               labelText: 'Voltage (V)',
-              border: OutlineInputBorder(),
             ),
             keyboardType: TextInputType.number,
           ),
@@ -257,9 +257,8 @@ class _MotorCurrentCalculatorState extends State<MotorCurrentCalculator> {
               Expanded(
                 child: TextField(
                   controller: _efficiencyCtrl,
-                  decoration: const InputDecoration(
+                  decoration: AppFormStyles.decoration(context,
                     labelText: 'Efficiency (%)',
-                    border: OutlineInputBorder(),
                   ),
                   keyboardType: TextInputType.number,
                 ),
@@ -268,9 +267,8 @@ class _MotorCurrentCalculatorState extends State<MotorCurrentCalculator> {
               Expanded(
                 child: TextField(
                   controller: _pfCtrl,
-                  decoration: const InputDecoration(
+                  decoration: AppFormStyles.decoration(context,
                     labelText: 'Power Factor',
-                    border: OutlineInputBorder(),
                   ),
                   keyboardType: TextInputType.number,
                 ),
@@ -284,15 +282,7 @@ class _MotorCurrentCalculatorState extends State<MotorCurrentCalculator> {
           ),
           if (_result.isNotEmpty) ...[
             const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.green.shade200),
-              ),
-              child: Text(_result, style: const TextStyle(fontSize: 16)),
-            ),
+            CalculationResultBox(text: _result),
           ],
         ],
       ),
@@ -317,25 +307,25 @@ class _CableSizeCalculatorState extends State<CableSizeCalculator> {
     if (current > 0) {
       String size = '';
       if (current <= 16) {
-        size = '2.5 mm²';
+        size = '2.5 mm?';
       } else if (current <= 25) {
-        size = '4 mm²';
+        size = '4 mm?';
       } else if (current <= 32) {
-        size = '6 mm²';
+        size = '6 mm?';
       } else if (current <= 40) {
-        size = '10 mm²';
+        size = '10 mm?';
       } else if (current <= 63) {
-        size = '16 mm²';
+        size = '16 mm?';
       } else if (current <= 80) {
-        size = '25 mm²';
+        size = '25 mm?';
       } else if (current <= 100) {
-        size = '35 mm²';
+        size = '35 mm?';
       } else if (current <= 125) {
-        size = '50 mm²';
+        size = '50 mm?';
       } else if (current <= 160) {
-        size = '70 mm²';
+        size = '70 mm?';
       } else {
-        size = '95 mm² or larger';
+        size = '95 mm? or larger';
       }
 
       setState(() => _result = 'Recommended Cable Size: $size');
@@ -349,14 +339,13 @@ class _CableSizeCalculatorState extends State<CableSizeCalculator> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Cable Size Calculator',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text('Cable Size Calculator',
+              style: AppFormStyles.sectionTitle(context)),
           const SizedBox(height: 24),
           TextField(
             controller: _currentCtrl,
-            decoration: const InputDecoration(
+            decoration: AppFormStyles.decoration(context,
               labelText: 'Current (A)',
-              border: OutlineInputBorder(),
             ),
             keyboardType: TextInputType.number,
           ),
@@ -367,13 +356,9 @@ class _CableSizeCalculatorState extends State<CableSizeCalculator> {
           ),
           if (_result.isNotEmpty) ...[
             const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(_result, style: const TextStyle(fontSize: 16)),
+            CalculationResultBox(
+              text: _result,
+              accentColor: AppTheme.accent,
             ),
           ],
         ],
@@ -416,39 +401,36 @@ class _VoltageDropCalculatorState extends State<VoltageDropCalculator> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Voltage Drop Calculator',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text('Voltage Drop Calculator',
+              style: AppFormStyles.sectionTitle(context)),
           const SizedBox(height: 24),
           TextField(
             controller: _currentCtrl,
-            decoration: const InputDecoration(
-                labelText: 'Current (A)', border: OutlineInputBorder()),
+            decoration: AppFormStyles.decoration(context,
+                labelText: 'Current (A)'),
             keyboardType: TextInputType.number,
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _lengthCtrl,
-            decoration: const InputDecoration(
-                labelText: 'Cable Length (m)', border: OutlineInputBorder()),
+            decoration: AppFormStyles.decoration(context,
+                labelText: 'Cable Length (m)'),
             keyboardType: TextInputType.number,
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _sizeCtrl,
-            decoration: const InputDecoration(
-                labelText: 'Cable Size (mm²)', border: OutlineInputBorder()),
+            decoration: AppFormStyles.decoration(context,
+                labelText: 'Cable Size (mm?)'),
             keyboardType: TextInputType.number,
           ),
           const SizedBox(height: 16),
           ElevatedButton(onPressed: _calculate, child: const Text('Calculate')),
           if (_result.isNotEmpty) ...[
             const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                  color: Colors.red.shade50,
-                  borderRadius: BorderRadius.circular(8)),
-              child: Text(_result, style: const TextStyle(fontSize: 16)),
+            CalculationResultBox(
+              text: _result,
+              accentColor: AppTheme.warning,
             ),
           ],
         ],
@@ -478,7 +460,7 @@ class _PowerFactorCalculatorState extends State<PowerFactorCalculator> {
       final pf = kw / kva;
       final angle = acos(pf) * 180 / pi;
       setState(() => _result =
-          'Power Factor: ${pf.toStringAsFixed(3)}\nAngle: ${angle.toStringAsFixed(1)}°');
+          'Power Factor: ${pf.toStringAsFixed(3)}\nAngle: ${angle.toStringAsFixed(1)}?');
     }
   }
 
@@ -489,34 +471,27 @@ class _PowerFactorCalculatorState extends State<PowerFactorCalculator> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Power Factor Calculator',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text('Power Factor Calculator',
+              style: AppFormStyles.sectionTitle(context)),
           const SizedBox(height: 24),
           TextField(
             controller: _kwCtrl,
-            decoration: const InputDecoration(
-                labelText: 'Active Power (kW)', border: OutlineInputBorder()),
+            decoration: AppFormStyles.decoration(context,
+                labelText: 'Active Power (kW)'),
             keyboardType: TextInputType.number,
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _kvaCtrl,
-            decoration: const InputDecoration(
-                labelText: 'Apparent Power (kVA)',
-                border: OutlineInputBorder()),
+            decoration: AppFormStyles.decoration(context,
+                labelText: 'Apparent Power (kVA)'),
             keyboardType: TextInputType.number,
           ),
           const SizedBox(height: 16),
           ElevatedButton(onPressed: _calculate, child: const Text('Calculate')),
           if (_result.isNotEmpty) ...[
             const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                  color: Colors.green.shade50,
-                  borderRadius: BorderRadius.circular(8)),
-              child: Text(_result, style: const TextStyle(fontSize: 16)),
-            ),
+            CalculationResultBox(text: _result),
           ],
         ],
       ),
@@ -561,40 +536,36 @@ class _EnergySavingsCalculatorState extends State<EnergySavingsCalculator> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Energy Savings (Affinity Laws)',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text('Energy Savings (Affinity Laws)',
+              style: AppFormStyles.sectionTitle(context)),
           const SizedBox(height: 24),
           TextField(
             controller: _speed1Ctrl,
-            decoration: const InputDecoration(
-                labelText: 'Original Speed (RPM)',
-                border: OutlineInputBorder()),
+            decoration: AppFormStyles.decoration(context,
+                labelText: 'Original Speed (RPM)'),
             keyboardType: TextInputType.number,
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _speed2Ctrl,
-            decoration: const InputDecoration(
-                labelText: 'New Speed (RPM)', border: OutlineInputBorder()),
+            decoration: AppFormStyles.decoration(context,
+                labelText: 'New Speed (RPM)'),
             keyboardType: TextInputType.number,
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _power1Ctrl,
-            decoration: const InputDecoration(
-                labelText: 'Original Power (kW)', border: OutlineInputBorder()),
+            decoration: AppFormStyles.decoration(context,
+                labelText: 'Original Power (kW)'),
             keyboardType: TextInputType.number,
           ),
           const SizedBox(height: 16),
           ElevatedButton(onPressed: _calculate, child: const Text('Calculate')),
           if (_result.isNotEmpty) ...[
             const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                  color: Colors.purple.shade50,
-                  borderRadius: BorderRadius.circular(8)),
-              child: Text(_result, style: const TextStyle(fontSize: 16)),
+            CalculationResultBox(
+              text: _result,
+              accentColor: AppTheme.secondaryPurple,
             ),
           ],
         ],
@@ -603,7 +574,7 @@ class _EnergySavingsCalculatorState extends State<EnergySavingsCalculator> {
   }
 }
 
-// Power Converter (HP ↔ kW)
+// Power Converter (HP ? kW)
 class PowerConverterCalculator extends StatefulWidget {
   const PowerConverterCalculator({super.key});
 
@@ -637,16 +608,16 @@ class _PowerConverterCalculatorState extends State<PowerConverterCalculator> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Power Converter',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text('Power Converter',
+              style: AppFormStyles.sectionTitle(context)),
           const SizedBox(height: 24),
           Row(
             children: [
               Expanded(
                 child: SegmentedButton<bool>(
                   segments: const [
-                    ButtonSegment(value: true, label: Text('kW → HP')),
-                    ButtonSegment(value: false, label: Text('HP → kW')),
+                    ButtonSegment(value: true, label: Text('kW ? HP')),
+                    ButtonSegment(value: false, label: Text('HP ? kW')),
                   ],
                   selected: {_isKwToHp},
                   onSelectionChanged: (Set<bool> newSelection) {
@@ -662,24 +633,20 @@ class _PowerConverterCalculatorState extends State<PowerConverterCalculator> {
           const SizedBox(height: 16),
           TextField(
             controller: _inputCtrl,
-            decoration: InputDecoration(
+            decoration: AppFormStyles.decoration(
+              context,
               labelText: _isKwToHp ? 'Power (kW)' : 'Power (HP)',
-              border: const OutlineInputBorder(),
             ),
             keyboardType: TextInputType.number,
             onChanged: (_) => _convert(),
           ),
           if (_result.isNotEmpty) ...[
             const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.teal.shade50,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(_result,
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold)),
+            CalculationResultBox(
+              text: _result,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              accentColor: AppTheme.accent,
             ),
           ],
         ],
@@ -720,6 +687,9 @@ class _CommissioningModeToolState extends State<CommissioningModeTool> {
     });
   }
 
+  InputDecoration _fieldDecoration(BuildContext context, String label) =>
+      AppFormStyles.decoration(context, labelText: label);
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -727,8 +697,8 @@ class _CommissioningModeToolState extends State<CommissioningModeTool> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Commissioning Mode',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text('Commissioning Mode',
+              style: AppFormStyles.sectionTitle(context)),
           const SizedBox(height: 12),
           Stepper(
             currentStep: _currentStep,
@@ -742,18 +712,21 @@ class _CommissioningModeToolState extends State<CommissioningModeTool> {
             onStepCancel: () {
               if (_currentStep > 0) setState(() => _currentStep -= 1);
             },
-            controlsBuilder: (context, details) => Row(
-              children: [
-                ElevatedButton(
-                  onPressed: details.onStepContinue,
-                  child: Text(_currentStep == 3 ? 'Finish' : 'Next'),
-                ),
-                const SizedBox(width: 8),
-                TextButton(
-                  onPressed: details.onStepCancel,
-                  child: const Text('Back'),
-                ),
-              ],
+            controlsBuilder: (context, details) => Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: Row(
+                children: [
+                  ElevatedButton(
+                    onPressed: details.onStepContinue,
+                    child: Text(_currentStep == 3 ? 'Finish' : 'Next'),
+                  ),
+                  const SizedBox(width: 8),
+                  TextButton(
+                    onPressed: details.onStepCancel,
+                    child: const Text('Back'),
+                  ),
+                ],
+              ),
             ),
             steps: [
               Step(
@@ -764,25 +737,19 @@ class _CommissioningModeToolState extends State<CommissioningModeTool> {
                     TextField(
                       controller: _motorKwCtrl,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                          labelText: 'Motor Power (kW)',
-                          border: OutlineInputBorder()),
+                      decoration: _fieldDecoration(context, 'Motor Power (kW)'),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     TextField(
                       controller: _motorVoltCtrl,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                          labelText: 'Motor Voltage (V)',
-                          border: OutlineInputBorder()),
+                      decoration: _fieldDecoration(context, 'Motor Voltage (V)'),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     TextField(
                       controller: _motorCurrentCtrl,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                          labelText: 'Motor Current (A)',
-                          border: OutlineInputBorder()),
+                      decoration: _fieldDecoration(context, 'Motor Current (A)'),
                     ),
                   ],
                 ),
@@ -802,8 +769,7 @@ class _CommissioningModeToolState extends State<CommissioningModeTool> {
                         child: Text('Closed Loop Vector')),
                   ],
                   onChanged: (v) => setState(() => _controlMode = v ?? 'V/F'),
-                  decoration: const InputDecoration(
-                      labelText: 'Mode', border: OutlineInputBorder()),
+                  decoration: _fieldDecoration(context, 'Mode'),
                 ),
               ),
               Step(
@@ -824,11 +790,9 @@ class _CommissioningModeToolState extends State<CommissioningModeTool> {
                       ],
                       onChanged: (v) =>
                           setState(() => _runSource = v ?? 'Terminals'),
-                      decoration: const InputDecoration(
-                          labelText: 'Run Command Source',
-                          border: OutlineInputBorder()),
+                      decoration: _fieldDecoration(context, 'Run Command Source'),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       value: _speedSource,
                       items: const [
@@ -844,9 +808,7 @@ class _CommissioningModeToolState extends State<CommissioningModeTool> {
                       ],
                       onChanged: (v) =>
                           setState(() => _speedSource = v ?? 'AI1 (4-20mA)'),
-                      decoration: const InputDecoration(
-                          labelText: 'Speed Reference Source',
-                          border: OutlineInputBorder()),
+                      decoration: _fieldDecoration(context, 'Speed Reference Source'),
                     ),
                   ],
                 ),
@@ -854,43 +816,37 @@ class _CommissioningModeToolState extends State<CommissioningModeTool> {
               Step(
                 title: const Text('Ramps & Protection'),
                 isActive: _currentStep >= 3,
-                content: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _accelCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                            labelText: 'Accel (s)',
-                            border: OutlineInputBorder()),
+                content: Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _accelCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: _fieldDecoration(context, 'Accel (s)'),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: TextField(
-                        controller: _decelCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                            labelText: 'Decel (s)',
-                            border: OutlineInputBorder()),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextField(
+                          controller: _decelCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: _fieldDecoration(context, 'Decel (s)'),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
           if (_summary.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.indigo.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.indigo.shade200),
-              ),
-              child: Text(_summary),
+            CalculationResultBox(
+              text: _summary,
+              accentColor: AppTheme.primary,
             ),
           ],
         ],
@@ -999,8 +955,8 @@ class _SignalToolkitCalculatorState extends State<SignalToolkitCalculator> {
         children: [
           // Header Card
           AppCard(
-            backgroundColor: Colors.blue.shade50,
-            accentColor: Colors.blue.shade600,
+            backgroundColor: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.35),
+            accentColor: Theme.of(context).colorScheme.primary,
             title: 'Signal Toolkit Calculator',
             subtitle: 'Convert between signals and engineering units',
             child: const SizedBox(height: 8),
@@ -1009,16 +965,13 @@ class _SignalToolkitCalculatorState extends State<SignalToolkitCalculator> {
 
           // Mode Selection Card
           AppCard(
-            backgroundColor: Colors.white,
+            backgroundColor: Theme.of(context).cardTheme.color,
             accentColor: Theme.of(context).colorScheme.primary,
             title: 'Signal Type',
             subtitle: 'Select the signal type to work with',
             child: DropdownButtonFormField<int>(
               value: _mode,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
+              decoration: AppFormStyles.decoration(context),
               items: const [
                 DropdownMenuItem(
                   value: 0,
@@ -1065,8 +1018,8 @@ class _SignalToolkitCalculatorState extends State<SignalToolkitCalculator> {
 
           // Engineering Range Card
           AppCard(
-            backgroundColor: Colors.white,
-            accentColor: Colors.purple.shade600,
+            backgroundColor: Theme.of(context).cardTheme.color,
+            accentColor: Theme.of(context).colorScheme.secondary,
             title: 'Engineering Range',
             subtitle: 'Define the engineering unit range',
             child: Row(
@@ -1075,12 +1028,11 @@ class _SignalToolkitCalculatorState extends State<SignalToolkitCalculator> {
                   child: TextField(
                     controller: _engMinCtrl,
                     keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
+                    style: AppFormStyles.fieldText(context),
+                    decoration: AppFormStyles.decoration(
+                      context,
                       labelText: 'Min Value',
-                      border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.arrow_downward),
-                      filled: true,
-                      fillColor: Colors.purple.shade50,
                     ),
                   ),
                 ),
@@ -1089,12 +1041,11 @@ class _SignalToolkitCalculatorState extends State<SignalToolkitCalculator> {
                   child: TextField(
                     controller: _engMaxCtrl,
                     keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
+                    style: AppFormStyles.fieldText(context),
+                    decoration: AppFormStyles.decoration(
+                      context,
                       labelText: 'Max Value',
-                      border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.arrow_upward),
-                      filled: true,
-                      fillColor: Colors.purple.shade50,
                     ),
                   ),
                 ),
@@ -1105,20 +1056,19 @@ class _SignalToolkitCalculatorState extends State<SignalToolkitCalculator> {
 
           // Input Value Card
           AppCard(
-            backgroundColor: Colors.white,
-            accentColor: Colors.teal.shade600,
+            backgroundColor: Theme.of(context).cardTheme.color,
+            accentColor: Theme.of(context).colorScheme.tertiary,
             title: 'Input Value',
             subtitle: _getInputSubtitle(),
             child: TextField(
               controller: _signalValueCtrl,
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(
+              style: AppFormStyles.fieldText(context),
+              decoration: AppFormStyles.decoration(
+                context,
                 labelText: _getInputLabel(),
-                border: const OutlineInputBorder(),
-                prefixIcon: Icon(_getInputIcon()),
-                filled: true,
-                fillColor: Colors.teal.shade50,
                 hintText: _getInputHint(),
+                prefixIcon: Icon(_getInputIcon()),
               ),
             ),
           ),
@@ -1126,8 +1076,8 @@ class _SignalToolkitCalculatorState extends State<SignalToolkitCalculator> {
 
           // Action Buttons Card
           AppCard(
-            backgroundColor: Colors.white,
-            accentColor: Colors.indigo.shade600,
+            backgroundColor: Theme.of(context).cardTheme.color,
+            accentColor: Theme.of(context).colorScheme.primary,
             title: 'Conversion',
             subtitle: 'Choose conversion direction',
             child: Row(
@@ -1136,11 +1086,9 @@ class _SignalToolkitCalculatorState extends State<SignalToolkitCalculator> {
                   child: ElevatedButton.icon(
                     onPressed: _convertToEngineering,
                     icon: const Icon(Icons.transform),
-                    label: const Text('Signal → Engineering'),
+                    label: const Text('Signal \u2192 Engineering'),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      backgroundColor: Colors.indigo.shade600,
-                      foregroundColor: Colors.white,
                     ),
                   ),
                 ),
@@ -1149,11 +1097,9 @@ class _SignalToolkitCalculatorState extends State<SignalToolkitCalculator> {
                   child: ElevatedButton.icon(
                     onPressed: _convertToSignal,
                     icon: const Icon(Icons.swap_horiz),
-                    label: const Text('Engineering → Signal'),
+                    label: const Text('Engineering \u2192 Signal'),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      backgroundColor: Colors.indigo.shade700,
-                      foregroundColor: Colors.white,
                     ),
                   ),
                 ),
@@ -1165,27 +1111,10 @@ class _SignalToolkitCalculatorState extends State<SignalToolkitCalculator> {
           if (_result.isNotEmpty) ...[
             const SizedBox(height: 20),
             AppCard(
-              backgroundColor: Colors.green.shade50,
-              accentColor: Colors.green.shade700,
+              accentColor: AppTheme.success,
               title: 'Conversion Result',
               subtitle: 'Calculated values',
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.green.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.green.shade300),
-                ),
-                child: Text(
-                  _result,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    height: 1.5,
-                  ),
-                ),
-              ),
+              child: CalculationResultBox(text: _result),
             ),
           ],
         ],
@@ -1282,7 +1211,7 @@ class _ProtocolRegisterMapperToolState
           'Data Type: $_dataType\n'
           'Raw Value: ${raw.toStringAsFixed(2)}\n'
           'Engineering Value: ${eng.toStringAsFixed(2)}\n'
-          'Formula: Eng = (Raw × $scale) + $offset';
+          'Formula: Eng = (Raw ? $scale) + $offset';
     });
   }
 
@@ -1293,15 +1222,14 @@ class _ProtocolRegisterMapperToolState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Protocol Register Mapper',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text('Protocol Register Mapper',
+              style: AppFormStyles.sectionTitle(context)),
           const SizedBox(height: 16),
           TextField(
             controller: _registerCtrl,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-                labelText: 'Register Address (e.g. 40001)',
-                border: OutlineInputBorder()),
+            decoration: AppFormStyles.decoration(context,
+                labelText: 'Register Address (e.g. 40001)'),
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
@@ -1314,15 +1242,15 @@ class _ProtocolRegisterMapperToolState
                   value: 'FLOAT32', child: Text('FLOAT32 (2 regs)')),
             ],
             onChanged: (v) => setState(() => _dataType = v ?? 'UINT16'),
-            decoration: const InputDecoration(
-                labelText: 'Data Type', border: OutlineInputBorder()),
+            decoration: AppFormStyles.decoration(context,
+                labelText: 'Data Type'),
           ),
           const SizedBox(height: 8),
           TextField(
             controller: _rawValueCtrl,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-                labelText: 'Raw Register Value', border: OutlineInputBorder()),
+            decoration: AppFormStyles.decoration(context,
+                labelText: 'Raw Register Value'),
           ),
           const SizedBox(height: 8),
           Row(
@@ -1331,8 +1259,8 @@ class _ProtocolRegisterMapperToolState
                 child: TextField(
                   controller: _scaleCtrl,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                      labelText: 'Scale', border: OutlineInputBorder()),
+                  decoration: AppFormStyles.decoration(context,
+                      labelText: 'Scale'),
                 ),
               ),
               const SizedBox(width: 8),
@@ -1340,8 +1268,8 @@ class _ProtocolRegisterMapperToolState
                 child: TextField(
                   controller: _offsetCtrl,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                      labelText: 'Offset', border: OutlineInputBorder()),
+                  decoration: AppFormStyles.decoration(context,
+                      labelText: 'Offset'),
                 ),
               ),
             ],
@@ -1353,15 +1281,9 @@ class _ProtocolRegisterMapperToolState
           ),
           if (_result.isNotEmpty) ...[
             const SizedBox(height: 16),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.brown.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.brown.shade200),
-              ),
-              child: Text(_result),
+            CalculationResultBox(
+              text: _result,
+              accentColor: AppTheme.warning,
             ),
           ],
         ],
@@ -1386,26 +1308,26 @@ class _ThermocoupleCalculatorState extends State<ThermocoupleCalculator> {
   // ITS-90 polynomial approximation
   double _mvToTemp(double mv, String type) {
     if (type == 'K') {
-      // K-type: valid -200°C to 1372°C
+      // K-type: valid -200?C to 1372?C
       if (mv < 0) return mv * 25.173 + 0.0;
       if (mv < 20.644) return mv * 25.08355 - 0.23343 * mv * mv / 10;
       return mv * 24.964 - 0.1166 * mv * mv / 10 + 100;
     } else if (type == 'J') {
-      // J-type: valid -210°C to 1200°C
+      // J-type: valid -210?C to 1200?C
       if (mv < 0) return mv * 19.849;
       if (mv < 42.919) return mv * 19.738 - 0.0847 * mv * mv / 10;
       return mv * 18.801 + 50;
     } else if (type == 'T') {
-      // T-type: valid -270°C to 400°C
+      // T-type: valid -270?C to 400?C
       return mv * 25.928 - 0.7602 * mv * mv / 100;
     } else if (type == 'E') {
-      // E-type: valid -270°C to 1000°C
+      // E-type: valid -270?C to 1000?C
       return mv * 17.057 - 0.2349 * mv * mv / 100;
     } else if (type == 'S') {
-      // S-type: valid 0°C to 1768°C
+      // S-type: valid 0?C to 1768?C
       return mv * 98.45 - 1.2 * mv * mv;
     } else if (type == 'R') {
-      // R-type: valid 0°C to 1768°C
+      // R-type: valid 0?C to 1768?C
       return mv * 94.07 - 1.1 * mv * mv;
     }
     return mv * 25.0;
@@ -1417,7 +1339,7 @@ class _ThermocoupleCalculatorState extends State<ThermocoupleCalculator> {
       final temp = _mvToTemp(mv, _type);
       final tempF = temp * 9 / 5 + 32;
       setState(() => _result =
-          'Temperature: ${temp.toStringAsFixed(1)} °C  /  ${tempF.toStringAsFixed(1)} °F');
+          'Temperature: ${temp.toStringAsFixed(1)} ?C  /  ${tempF.toStringAsFixed(1)} ?F');
     }
   }
 
@@ -1428,36 +1350,35 @@ class _ThermocoupleCalculatorState extends State<ThermocoupleCalculator> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Thermocouple Temperature Calculator',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text('Thermocouple Temperature Calculator',
+              style: AppFormStyles.sectionTitle(context)),
           const SizedBox(height: 24),
           DropdownButtonFormField<String>(
             value: _type,
             items: const [
-              DropdownMenuItem(value: 'K', child: Text('Type K  (-200°C to 1372°C)')),
-              DropdownMenuItem(value: 'J', child: Text('Type J  (-210°C to 1200°C)')),
-              DropdownMenuItem(value: 'T', child: Text('Type T  (-270°C to 400°C)')),
-              DropdownMenuItem(value: 'E', child: Text('Type E  (-270°C to 1000°C)')),
-              DropdownMenuItem(value: 'S', child: Text('Type S  (0°C to 1768°C)')),
-              DropdownMenuItem(value: 'R', child: Text('Type R  (0°C to 1768°C)')),
+              DropdownMenuItem(value: 'K', child: Text('Type K  (-200?C to 1372?C)')),
+              DropdownMenuItem(value: 'J', child: Text('Type J  (-210?C to 1200?C)')),
+              DropdownMenuItem(value: 'T', child: Text('Type T  (-270?C to 400?C)')),
+              DropdownMenuItem(value: 'E', child: Text('Type E  (-270?C to 1000?C)')),
+              DropdownMenuItem(value: 'S', child: Text('Type S  (0?C to 1768?C)')),
+              DropdownMenuItem(value: 'R', child: Text('Type R  (0?C to 1768?C)')),
             ],
             onChanged: (v) => setState(() => _type = v ?? 'K'),
-            decoration: const InputDecoration(labelText: 'Thermocouple Type', border: OutlineInputBorder()),
+            decoration: AppFormStyles.decoration(context,labelText: 'Thermocouple Type'),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _voltageCtrl,
-            decoration: const InputDecoration(labelText: 'Voltage (mV)', border: OutlineInputBorder()),
+            decoration: AppFormStyles.decoration(context,labelText: 'Voltage (mV)'),
             keyboardType: TextInputType.number,
           ),
           const SizedBox(height: 16),
           ElevatedButton(onPressed: _calculate, child: const Text('Calculate')),
           if (_result.isNotEmpty) ...[
             const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(8)),
-              child: Text(_result, style: const TextStyle(fontSize: 16)),
+            CalculationResultBox(
+              text: _result,
+              accentColor: AppTheme.error,
             ),
           ],
         ],
@@ -1502,8 +1423,8 @@ class _PressureCalculatorState extends State<PressureCalculator> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Pressure Transmitter Calculator',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text('Pressure Transmitter Calculator',
+              style: AppFormStyles.sectionTitle(context)),
           const SizedBox(height: 24),
           SegmentedButton<bool>(
             segments: const [
@@ -1519,7 +1440,7 @@ class _PressureCalculatorState extends State<PressureCalculator> {
               Expanded(
                 child: TextField(
                   controller: _minPressureCtrl,
-                  decoration: const InputDecoration(labelText: 'Min Pressure (bar)', border: OutlineInputBorder()),
+                  decoration: AppFormStyles.decoration(context,labelText: 'Min Pressure (bar)'),
                   keyboardType: TextInputType.number,
                 ),
               ),
@@ -1527,7 +1448,7 @@ class _PressureCalculatorState extends State<PressureCalculator> {
               Expanded(
                 child: TextField(
                   controller: _maxPressureCtrl,
-                  decoration: const InputDecoration(labelText: 'Max Pressure (bar)', border: OutlineInputBorder()),
+                  decoration: AppFormStyles.decoration(context,labelText: 'Max Pressure (bar)'),
                   keyboardType: TextInputType.number,
                 ),
               ),
@@ -1536,9 +1457,9 @@ class _PressureCalculatorState extends State<PressureCalculator> {
           const SizedBox(height: 12),
           TextField(
             controller: _voltageCtrl,
-            decoration: InputDecoration(
+            decoration: AppFormStyles.decoration(
+              context,
               labelText: _isCurrent ? 'Current (mA)' : 'Voltage (V)',
-              border: const OutlineInputBorder(),
             ),
             keyboardType: TextInputType.number,
           ),
@@ -1546,10 +1467,9 @@ class _PressureCalculatorState extends State<PressureCalculator> {
           ElevatedButton(onPressed: _calculate, child: const Text('Calculate')),
           if (_result.isNotEmpty) ...[
             const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: Colors.blueGrey.shade50, borderRadius: BorderRadius.circular(8)),
-              child: Text(_result, style: const TextStyle(fontSize: 16)),
+            CalculationResultBox(
+              text: _result,
+              accentColor: AppTheme.grey500,
             ),
           ],
         ],
@@ -1594,34 +1514,33 @@ class _HarmonicsCalculatorState extends State<HarmonicsCalculator> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Harmonic Distortion Calculator',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text('Harmonic Distortion Calculator',
+              style: AppFormStyles.sectionTitle(context)),
           const SizedBox(height: 24),
           TextField(
             controller: _fundamentalCtrl,
-            decoration: const InputDecoration(labelText: 'Fundamental (V/A)', border: OutlineInputBorder()),
+            decoration: AppFormStyles.decoration(context,labelText: 'Fundamental (V/A)'),
             keyboardType: TextInputType.number,
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _harmonicCtrl,
-            decoration: const InputDecoration(labelText: 'Harmonic Amplitude (V/A)', border: OutlineInputBorder()),
+            decoration: AppFormStyles.decoration(context,labelText: 'Harmonic Amplitude (V/A)'),
             keyboardType: TextInputType.number,
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _orderCtrl,
-            decoration: const InputDecoration(labelText: 'Harmonic Order', border: OutlineInputBorder()),
+            decoration: AppFormStyles.decoration(context,labelText: 'Harmonic Order'),
             keyboardType: TextInputType.number,
           ),
           const SizedBox(height: 16),
           ElevatedButton(onPressed: _calculate, child: const Text('Calculate')),
           if (_result.isNotEmpty) ...[
             const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: Colors.purple.shade50, borderRadius: BorderRadius.circular(8)),
-              child: Text(_result, style: const TextStyle(fontSize: 16)),
+            CalculationResultBox(
+              text: _result,
+              accentColor: AppTheme.secondaryPurple,
             ),
           ],
         ],

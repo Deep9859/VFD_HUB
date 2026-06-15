@@ -16,6 +16,10 @@ class AppCard extends StatelessWidget {
   final BorderRadius? borderRadius;
   final bool showGradient;
   final bool glassmorphism;
+  final int? stepNumber;
+  final int? stepTotal;
+  final bool isActiveStep;
+  final bool isCompletedStep;
 
   const AppCard({
     super.key,
@@ -33,6 +37,10 @@ class AppCard extends StatelessWidget {
     this.borderRadius,
     this.showGradient = false,
     this.glassmorphism = false,
+    this.stepNumber,
+    this.stepTotal,
+    this.isActiveStep = false,
+    this.isCompletedStep = false,
   });
 
   @override
@@ -42,18 +50,28 @@ class AppCard extends StatelessWidget {
     final bgColor = backgroundColor ??
         (isDark ? const Color(0xFF1E1E2E) : Colors.white);
     final borderColor = isDark ? const Color(0xFF2A2A3E) : AppTheme.grey200;
+    final highlight = isCompletedStep
+        ? AppTheme.success
+        : (isActiveStep ? AppTheme.primary : null);
 
     return Container(
       width: double.infinity,
       padding: padding ?? const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: bgColor,
+        color: showGradient && !isDark
+            ? Color.lerp(bgColor, color.withOpacity(0.04), 0.5)
+            : bgColor,
         borderRadius: borderRadius ?? BorderRadius.circular(12),
-        border: Border.all(color: borderColor),
+        border: Border.all(
+          color: highlight ?? borderColor,
+          width: highlight != null ? 2 : 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
-            blurRadius: 8,
+            color: (highlight ?? Colors.black).withOpacity(
+              highlight != null ? 0.12 : (isDark ? 0.2 : 0.04),
+            ),
+            blurRadius: highlight != null ? 12 : 8,
             offset: const Offset(0, 2),
           ),
         ],
@@ -66,6 +84,15 @@ class AppCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                if (stepNumber != null) ...[
+                  _StepBadge(
+                    number: stepNumber!,
+                    total: stepTotal,
+                    done: isCompletedStep,
+                    active: isActiveStep,
+                  ),
+                  const SizedBox(width: 10),
+                ],
                 if (icon != null) ...[
                   Container(
                     width: 36,
@@ -110,6 +137,47 @@ class AppCard extends StatelessWidget {
           child,
         ],
       ),
+    );
+  }
+}
+
+class _StepBadge extends StatelessWidget {
+  final int number;
+  final int? total;
+  final bool done;
+  final bool active;
+
+  const _StepBadge({
+    required this.number,
+    this.total,
+    required this.done,
+    required this.active,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = done
+        ? AppTheme.success
+        : (active ? AppTheme.primary : AppTheme.grey400);
+
+    return Container(
+      width: 36,
+      height: 36,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: done
+          ? const Icon(Icons.check, color: Colors.white, size: 18)
+          : Text(
+              total != null ? '$number/$total' : '$number',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: total != null ? 11 : 14,
+              ),
+            ),
     );
   }
 }

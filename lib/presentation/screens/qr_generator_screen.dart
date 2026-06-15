@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter/services.dart';
 import '../widgets/app_card.dart';
 
@@ -47,7 +48,6 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
 
     switch (_selectedFormat) {
       case 'simple':
-        // Format: VENDOR|MODEL|POWER|SERIAL
         code = vendor;
         code += '|$model';
         if (power.isNotEmpty) code += '|$power';
@@ -55,14 +55,12 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
         break;
 
       case 'detailed':
-        // Format: VENDOR:ABB|MODEL:ACS580|POWER:7.5|SERIAL:12345
         code = 'VENDOR:$vendor|MODEL:$model';
         if (power.isNotEmpty) code += '|POWER:$power';
         if (serial.isNotEmpty) code += '|SERIAL:$serial';
         break;
 
       case 'json':
-        // Format: {"vendor":"ABB","model":"ACS580","power":7.5}
         code = '{"vendor":"$vendor","model":"$model"';
         if (power.isNotEmpty) code += ',"power":$power';
         if (serial.isNotEmpty) code += ',"serial":"$serial"';
@@ -108,11 +106,11 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
             AppCard(
               icon: Icons.info,
               title: 'QR Code Generator',
-              subtitle: 'Generate VFD QR code data quickly',
+              subtitle: 'Generate scannable VFD nameplate QR codes',
               accentColor: Colors.blue.shade700,
               backgroundColor: Colors.blue.shade50,
               child: Text(
-                'Generate QR codes for VFD nameplates or configurations',
+                'Scan the QR below with VFD Hub or print it on a nameplate label.',
                 style: TextStyle(
                   color: Colors.blue.shade900,
                   fontSize: 13,
@@ -121,7 +119,6 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Format selection
             const Text(
               'QR Code Format',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -155,7 +152,6 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Input fields
             const Text(
               'VFD Information',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -167,7 +163,6 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
               decoration: const InputDecoration(
                 labelText: 'Vendor *',
                 hintText: 'e.g., ABB, Siemens, Delta',
-                border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.business),
               ),
               textCapitalization: TextCapitalization.words,
@@ -179,7 +174,6 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
               decoration: const InputDecoration(
                 labelText: 'Model *',
                 hintText: 'e.g., ACS580, SINAMICS G120',
-                border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.memory),
               ),
             ),
@@ -190,7 +184,6 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
               decoration: const InputDecoration(
                 labelText: 'Power Rating (kW)',
                 hintText: 'e.g., 7.5',
-                border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.bolt),
               ),
               keyboardType: TextInputType.number,
@@ -202,13 +195,11 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
               decoration: const InputDecoration(
                 labelText: 'Serial Number',
                 hintText: 'e.g., 12345ABC',
-                border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.tag),
               ),
             ),
             const SizedBox(height: 24),
 
-            // Generate button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -224,15 +215,39 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Generated code display
             if (_generatedCode.isNotEmpty) ...[
               const Divider(),
               const SizedBox(height: 16),
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade300),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.06),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: QrImageView(
+                    data: _generatedCode,
+                    version: QrVersions.auto,
+                    size: 220,
+                    backgroundColor: Colors.white,
+                    errorCorrectionLevel: QrErrorCorrectLevel.M,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Generated QR Code Data',
+                    'Encoded Data',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   IconButton(
@@ -260,8 +275,6 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-
-              // Instructions
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -277,18 +290,16 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
                         Icon(Icons.check_circle, color: Colors.green.shade700),
                         const SizedBox(width: 8),
                         const Text(
-                          'Next Steps',
+                          'Ready to use',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '1. Copy the generated code\n'
-                      '2. Use any QR code generator website/app\n'
-                      '3. Paste the code and generate QR image\n'
-                      '4. Print and attach to VFD nameplate\n'
-                      '5. Scan with VFD Hub app',
+                      '1. Scan with VFD Hub QR scanner\n'
+                      '2. Or print this screen / take a screenshot for the nameplate\n'
+                      '3. Share encoded data via clipboard if needed',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.green.shade900,

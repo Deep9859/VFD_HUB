@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/unit_conversion_service.dart';
+import '../../core/theme/app_form_styles.dart';
 import '../widgets/app_card.dart';
+import '../widgets/calculation_result_box.dart';
 
 class UnitConverterScreen extends StatefulWidget {
   const UnitConverterScreen({super.key});
@@ -55,8 +57,14 @@ class _UnitConverterScreenState extends State<UnitConverterScreen> {
     _updateUnits();
   }
 
+  @override
+  void dispose() {
+    _inputCtrl.dispose();
+    super.dispose();
+  }
+
   void _updateUnits() {
-    final category = _categories[_selectedCategory]['name'];
+    final category = _categories[_selectedCategory]['name'] as String;
     final units = _units[category]!;
     _fromUnit = units[0];
     _toUnit = units.length > 1 ? units[1] : units[0];
@@ -70,14 +78,13 @@ class _UnitConverterScreenState extends State<UnitConverterScreen> {
       return;
     }
 
-    // Same unit selected
     if (_fromUnit == _toUnit) {
       setState(() => _result = value.toStringAsFixed(4));
       return;
     }
 
     double converted = value;
-    final category = _categories[_selectedCategory]['name'];
+    final category = _categories[_selectedCategory]['name'] as String;
 
     switch (category) {
       case 'Power':
@@ -248,124 +255,178 @@ class _UnitConverterScreenState extends State<UnitConverterScreen> {
     setState(() => _result = converted.toStringAsFixed(4));
   }
 
+  List<String> get _currentUnits =>
+      _units[_categories[_selectedCategory]['name'] as String]!;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Unit Converter')),
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: AppCard(
-              backgroundColor: Colors.grey.shade100,
-              accentColor: Colors.blue,
-              title: 'Units',
-              subtitle: 'Pick a category',
-              child: ListView.builder(
-                itemCount: _categories.length,
-                itemBuilder: (ctx, i) => _buildCategoryButton(i),
-              ),
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: AppCard(
-                title: _categories[_selectedCategory]['name'],
-                subtitle:
-                    'Convert ${_fromUnit.isEmpty ? 'value' : _fromUnit} to ${_toUnit.isEmpty ? 'unit' : _toUnit}',
-                accentColor: _categories[_selectedCategory]['color'],
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextField(
-                      controller: _inputCtrl,
-                      decoration: InputDecoration(
-                        labelText: 'Enter value',
-                        border: const OutlineInputBorder(),
-                        suffixIcon: DropdownButton<String>(
-                          value: _fromUnit,
-                          items: _units[_categories[_selectedCategory]['name']]!
-                              .map((u) => DropdownMenuItem(value: u, child: Text(u)))
-                              .toList(),
-                          onChanged: (v) => setState(() {
-                            _fromUnit = v!;
-                            _convert();
-                          }),
-                        ),
-                      ),
-                      keyboardType: TextInputType.number,
-                      onChanged: (_) => _convert(),
-                    ),
-                    const SizedBox(height: 16),
-                    const Icon(Icons.arrow_downward, size: 32),
-                    const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: _categories[_selectedCategory]['color'].withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: _categories[_selectedCategory]['color']),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              _result.isEmpty ? '0' : _result,
-                              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          DropdownButton<String>(
-                            value: _toUnit,
-                            items: _units[_categories[_selectedCategory]['name']]!
-                                .map((u) => DropdownMenuItem(value: u, child: Text(u)))
-                                .toList(),
-                            onChanged: (v) => setState(() {
-                              _toUnit = v!;
-                              _convert();
-                            }),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final wide = constraints.maxWidth >= 700;
+          if (wide) {
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(
+                  width: 132,
+                  child: _buildCategoryRail(Axis.vertical),
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: _buildConverterCard(),
+                  ),
+                ),
+              ],
+            );
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(height: 96, child: _buildCategoryRail(Axis.horizontal)),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: _buildConverterCard(),
                 ),
               ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildCategoryRail(Axis axis) {
+    final isVertical = axis == Axis.vertical;
+
+    return Material(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: ListView.separated(
+        scrollDirection: axis,
+        padding: EdgeInsets.symmetric(
+          horizontal: isVertical ? 0 : 8,
+          vertical: isVertical ? 8 : 0,
+        ),
+        itemCount: _categories.length,
+        separatorBuilder: (_, __) => SizedBox(
+          width: isVertical ? 0 : 4,
+          height: isVertical ? 4 : 0,
+        ),
+        itemBuilder: (ctx, i) => _buildCategoryButton(i, compact: !isVertical),
+      ),
+    );
+  }
+
+  Widget _buildConverterCard() {
+    final category = _categories[_selectedCategory];
+    final color = category['color'] as Color;
+    final name = category['name'] as String;
+
+    return AppCard(
+      title: name,
+      subtitle: 'Convert $_fromUnit to $_toUnit',
+      accentColor: color,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextField(
+            controller: _inputCtrl,
+            decoration: AppFormStyles.decoration(
+              context,
+              labelText: 'Enter value ($_fromUnit)',
             ),
+            style: AppFormStyles.fieldText(context),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            onChanged: (_) => _convert(),
+          ),
+          const SizedBox(height: 12),
+          DropdownButtonFormField<String>(
+            value: _fromUnit,
+            decoration: AppFormStyles.decoration(context, labelText: 'From unit'),
+            items: _currentUnits
+                .map((u) => DropdownMenuItem(value: u, child: Text(u)))
+                .toList(),
+            onChanged: (v) {
+              if (v == null) return;
+              setState(() {
+                _fromUnit = v;
+                _convert();
+              });
+            },
+          ),
+          const SizedBox(height: 16),
+          const Icon(Icons.arrow_downward, size: 32),
+          const SizedBox(height: 16),
+          CalculationResultBox(
+            text: _result.isEmpty ? '0' : '$_result $_toUnit',
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            accentColor: color,
+          ),
+          const SizedBox(height: 12),
+          DropdownButtonFormField<String>(
+            value: _toUnit,
+            decoration: AppFormStyles.decoration(context, labelText: 'To unit'),
+            items: _currentUnits
+                .map((u) => DropdownMenuItem(value: u, child: Text(u)))
+                .toList(),
+            onChanged: (v) {
+              if (v == null) return;
+              setState(() {
+                _toUnit = v;
+                _convert();
+              });
+            },
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCategoryButton(int index) {
+  Widget _buildCategoryButton(int index, {required bool compact}) {
     final cat = _categories[index];
+    final color = cat['color'] as Color;
     final selected = _selectedCategory == index;
+
     return InkWell(
       onTap: () => setState(() {
         _selectedCategory = index;
         _updateUnits();
       }),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        width: compact ? 72 : null,
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 8 : 12,
+          vertical: compact ? 10 : 12,
+        ),
         decoration: BoxDecoration(
-          color: selected ? cat['color'].withOpacity(0.2) : null,
+          color: selected ? color.withOpacity(0.15) : null,
           border: Border(
             left: BorderSide(
-              color: selected ? cat['color'] : Colors.transparent,
+              color: selected && !compact ? color : Colors.transparent,
               width: 4,
+            ),
+            bottom: BorderSide(
+              color: selected && compact ? color : Colors.transparent,
+              width: 3,
             ),
           ),
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(cat['icon'], color: cat['color'], size: 28),
+            Icon(cat['icon'] as IconData, color: color, size: compact ? 22 : 28),
             const SizedBox(height: 4),
             Text(
-              cat['name'],
+              cat['name'] as String,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 10),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: compact ? 9 : 10),
             ),
           ],
         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
@@ -6,7 +7,7 @@ import '../auth/login_screen.dart';
 import '../auth/signup_screen.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/app_card.dart';
-import 'home_screen.dart';
+import 'main_shell_screen.dart';
 import 'privacy_policy_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -14,6 +15,7 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -122,7 +124,7 @@ class WelcomeScreen extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            'Professional VFD Parameter Management',
+                            'Industrial VFD Platform — Configure, Commission & Collaborate',
                             style: GoogleFonts.inter(
                               fontSize: 16,
                               color: Colors.white.withOpacity(0.95),
@@ -133,14 +135,61 @@ class WelcomeScreen extends StatelessWidget {
                           ),
                         ),
 
-                        const SizedBox(height: 56),
+                        const SizedBox(height: 40),
+
+                        AppCard(
+                          backgroundColor:
+                              Colors.white.withOpacity(isDark ? 0.08 : 0.12),
+                          accentColor: Colors.white,
+                          title: l10n.welcomeFlowTitle,
+                          subtitle: l10n.welcomeFlowSubtitle,
+                          titleColor: Colors.white,
+                          subtitleColor: Colors.white.withOpacity(0.8),
+                          borderRadius: BorderRadius.circular(24),
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            children: [
+                              _buildFlowStep(
+                                1,
+                                l10n.configStep1Short,
+                                Icons.factory_rounded,
+                              ),
+                              const SizedBox(height: 14),
+                              _buildFlowStep(
+                                2,
+                                l10n.configStep2Short,
+                                Icons.electric_bolt_rounded,
+                              ),
+                              const SizedBox(height: 14),
+                              _buildFlowStep(
+                                3,
+                                l10n.configStep3Short,
+                                Icons.cable_rounded,
+                              ),
+                              const SizedBox(height: 14),
+                              _buildFlowStep(
+                                4,
+                                l10n.configStep4Short,
+                                Icons.tune_rounded,
+                              ),
+                              const SizedBox(height: 14),
+                              _buildFlowStep(
+                                5,
+                                l10n.configStep5Short,
+                                Icons.library_books_rounded,
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 32),
 
                         // Features Card with Glassmorphism
                         AppCard(
                           backgroundColor: Colors.white.withOpacity(isDark ? 0.08 : 0.12),
                           accentColor: Colors.white,
-                          title: 'Professional Features',
-                          subtitle: 'Designed for industrial automation experts',
+                          title: 'Industrial Platform',
+                          subtitle: 'Levels 1–4 — field tool to enterprise',
                           titleColor: Colors.white,
                           subtitleColor: Colors.white.withOpacity(0.8),
                           glassmorphism: true,
@@ -150,30 +199,44 @@ class WelcomeScreen extends StatelessWidget {
                             children: [
                               _buildFeature(
                                 Icons.factory_rounded,
-                                '19+ VFD Vendors',
-                                'Comprehensive manufacturer support',
+                                '21 VFD Vendors',
+                                'ABB, Siemens, Danfoss, Schneider, Yaskawa & more',
                                 AppTheme.primary,
                               ),
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 20),
                               _buildFeature(
-                                Icons.devices_rounded,
-                                '200+ VFD Models',
-                                'Extensive model database',
-                                AppTheme.primary,
+                                Icons.search_rounded,
+                                'Smart Search & QR',
+                                'Fuzzy catalog search, scan & generate QR configs',
+                                AppTheme.accent,
                               ),
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 20),
                               _buildFeature(
-                                Icons.settings_applications_rounded,
-                                'Parameter Configuration',
-                                'Advanced parameter management',
-                                AppTheme.primary,
+                                Icons.lan_rounded,
+                                'Modbus TCP',
+                                'Read-only commissioning on live drives',
+                                Colors.teal,
                               ),
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 20),
                               _buildFeature(
-                                Icons.library_books_rounded,
-                                'Manuals & Fault Codes',
-                                'Complete documentation access',
-                                AppTheme.primary,
+                                Icons.folder_shared_rounded,
+                                'Projects & Backup',
+                                'Save named configs, export & restore JSON',
+                                Colors.indigo,
+                              ),
+                              const SizedBox(height: 20),
+                              _buildFeature(
+                                Icons.business_rounded,
+                                'Enterprise RBAC',
+                                'Teams, audit log, custom vendors & admin panel',
+                                Colors.deepPurple,
+                              ),
+                              const SizedBox(height: 20),
+                              _buildFeature(
+                                Icons.document_scanner_outlined,
+                                'Nameplate OCR',
+                                'Scan motor plate to pre-fill power ratings',
+                                AppTheme.warning,
                               ),
                             ],
                           ),
@@ -286,7 +349,7 @@ class WelcomeScreen extends StatelessWidget {
 
                         // Version Info
                         Text(
-                          'Version 1.1.0',
+                          'Version 2.0.0',
                           style: GoogleFonts.inter(
                             fontSize: 12,
                             color: Colors.white.withOpacity(0.6),
@@ -313,13 +376,45 @@ class WelcomeScreen extends StatelessWidget {
     }
     if (!context.mounted || !auth.isAuthenticated) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
+      MaterialPageRoute(builder: (_) => const MainShellScreen()),
     );
   }
 
   static void _openLogin(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
+  }
+
+  Widget _buildFlowStep(int number, String label, IconData icon) {
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 16,
+          backgroundColor: Colors.white.withOpacity(0.2),
+          child: Text(
+            '$number',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
+          ),
+        ),
+        const SizedBox(width: 14),
+        Icon(icon, color: Colors.white.withOpacity(0.9), size: 22),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ],
     );
   }
 

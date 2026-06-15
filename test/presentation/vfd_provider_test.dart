@@ -31,6 +31,10 @@ void main() {
       test('should load vendors', () async {
         await provider.loadVendors();
         expect(provider.vendors, isNotEmpty);
+        expect(provider.vendors.length, lessThanOrEqualTo(21));
+        for (final v in provider.vendors) {
+          expect(v.name, isNotEmpty);
+        }
       });
     });
 

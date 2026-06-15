@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import '../../core/theme/app_form_styles.dart';
 import '../../data/services/manual_manager_service.dart';
 import '../widgets/app_card.dart';
 
@@ -28,10 +29,15 @@ class _ManualImportScreenState extends State<ManualImportScreen> {
   ];
 
   final List<String> _vendors = [
-    'ABB', 'Siemens', 'Schneider', 'Mitsubishi', 'Yaskawa',
-    'Danfoss', 'Allen Bradley', 'Hitachi', 'Toshiba', 'WEG',
-    'LS', 'Lenze', 'Omron', 'Inovance', 'INVT', 'KEB',
-    'Parker', 'Fuji', 'L&T', 'Nidec', 'Delta'
+    'ABB',
+    'Yaskawa',
+    'INVT',
+    'Danfoss',
+    'Schneider',
+    'Allen Bradley',
+    'Siemens',
+    'Mitsubishi',
+    'Delta',
   ];
 
   @override
@@ -230,10 +236,11 @@ class _ManualImportScreenState extends State<ManualImportScreen> {
             // Model Name
             TextField(
               controller: _modelController,
-              decoration: InputDecoration(
+              style: AppFormStyles.fieldText(context),
+              decoration: AppFormStyles.decoration(
+                context,
                 labelText: 'Model Name',
                 hintText: 'e.g., ACS580, SINAMICS G120',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 prefixIcon: const Icon(Icons.memory),
               ),
             ),
@@ -346,11 +353,7 @@ class _ManualImportScreenState extends State<ManualImportScreen> {
     required Function(String?) onChanged,
   }) {
     return DropdownButtonFormField<String>(
-      decoration: InputDecoration(
-        labelText: label,
-        filled: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      ),
+      decoration: AppFormStyles.decoration(context, labelText: label),
       value: value,
       items: items
           .map((item) => DropdownMenuItem(value: item, child: Text(item)))

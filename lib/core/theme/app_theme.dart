@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'app_form_styles.dart';
 
 class AppTheme {
   // ── Brand Colors ──────────────────────────────────────────────────
@@ -70,31 +71,17 @@ class AppTheme {
       color: Colors.white,
       margin: EdgeInsets.zero,
     ),
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
+    inputDecorationTheme: AppFormStyles.inputTheme(
+      isDark: false,
       fillColor: grey100,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: grey300),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: grey300),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: primary, width: 2),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: error),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: error, width: 2),
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-      labelStyle: GoogleFonts.inter(fontSize: 14, color: grey500),
+      borderColor: grey300,
+      focusColor: primary,
+      labelColor: grey500,
+      hintColor: grey400,
+      errorColor: error,
+    ).copyWith(
+      labelStyle: GoogleFonts.inter(fontSize: 13, height: 1.2, color: grey500),
+      floatingLabelStyle: GoogleFonts.inter(fontSize: 13, height: 1.2, color: grey500),
       hintStyle: GoogleFonts.inter(fontSize: 14, color: grey400),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
@@ -174,23 +161,17 @@ class AppTheme {
       color: const Color(0xFF1E1E2E),
       margin: EdgeInsets.zero,
     ),
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
+    inputDecorationTheme: AppFormStyles.inputTheme(
+      isDark: true,
       fillColor: const Color(0xFF2A2A3E),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Color(0xFF3A3A4E)),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Color(0xFF3A3A4E)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Color(0xFF5B9BD5), width: 2),
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-      labelStyle: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF8080A0)),
+      borderColor: const Color(0xFF3A3A4E),
+      focusColor: const Color(0xFF5B9BD5),
+      labelColor: const Color(0xFF8080A0),
+      hintColor: const Color(0xFF606080),
+      errorColor: const Color(0xFFFF6B6B),
+    ).copyWith(
+      labelStyle: GoogleFonts.inter(fontSize: 13, height: 1.2, color: const Color(0xFF8080A0)),
+      floatingLabelStyle: GoogleFonts.inter(fontSize: 13, height: 1.2, color: const Color(0xFF8080A0)),
       hintStyle: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF606080)),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(

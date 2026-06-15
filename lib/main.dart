@@ -4,8 +4,11 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'core/security/security_service.dart';
+import 'core/services/remote_catalog_service.dart';
+import 'core/services/custom_vendor_service.dart';
 import 'presentation/providers/vfd_provider.dart';
 import 'presentation/providers/auth_provider.dart';
+import 'presentation/providers/enterprise_provider.dart';
 import 'presentation/providers/locale_provider.dart';
 import 'presentation/providers/theme_provider.dart';
 import 'presentation/screens/app_gate_screen.dart';
@@ -20,6 +23,8 @@ void main() async {
   }
 
   await SecurityService.initialize();
+  await RemoteCatalogService.loadCacheFromDisk();
+  await CustomVendorService.loadCache();
 
   runApp(const VfdParamApp());
 }
@@ -33,6 +38,7 @@ class VfdParamApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => VfdProvider()..loadVendors()),
+        ChangeNotifierProvider(create: (_) => EnterpriseProvider()..load()),
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],

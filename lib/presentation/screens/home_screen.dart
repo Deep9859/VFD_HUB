@@ -2,12 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/config/configuration_flow.dart';
+import '../../core/config/supported_vendors.dart';
 import '../../core/theme/app_theme.dart';
 import 'vfd_comparison_screen.dart';
 import '../../data/models/vendor_model.dart';
 import '../../data/models/protocol_model.dart';
 import '../providers/vfd_provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/enterprise_provider.dart';
+import '../../core/enterprise/app_permission.dart';
+import 'enterprise_join_screen.dart';
+import 'admin_panel_screen.dart';
+import 'team_workspace_screen.dart';
 import '../providers/locale_provider.dart';
 import '../providers/theme_provider.dart';
 import '../widgets/parameter_editor.dart';
@@ -25,12 +33,20 @@ import '../../core/services/permissions_service.dart';
 import '../../core/services/widget_service.dart';
 import 'calculation_tools_screen.dart';
 import 'unit_converter_screen.dart';
+import 'saved_projects_screen.dart';
+import 'settings_screen.dart';
+import 'commissioning_screen.dart';
 import 'welcome_screen.dart';
 import '../widgets/app_card.dart';
+import '../widgets/configuration_progress.dart';
+import '../widgets/setup_guide_sheet.dart';
+import '../../core/services/nameplate_ocr_service.dart';
 import '../../core/services/voice_command_service.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final bool embedInShell;
+
+  const HomeScreen({super.key, this.embedInShell = false});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -40,11 +56,70 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _lastDrawingPromptKey;
   bool _allowDrawingUpload = false;
   final VoiceCommandService _voiceService = VoiceCommandService();
+  final ScrollController _scrollController = ScrollController();
+  final Map<int, GlobalKey> _stepKeys = {
+    for (var i = 1; i <= 6; i++) i: GlobalKey(),
+  };
+
+  static const _guidePrefsKey = 'home_setup_guide_seen_v1';
 
   @override
   void initState() {
     super.initState();
     _voiceService.initialize();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowSetupGuide());
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _maybeShowSetupGuide() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_guidePrefsKey) == true) return;
+    if (!mounted) return;
+    await SetupGuideSheet.show(context);
+    await prefs.setBool(_guidePrefsKey, true);
+  }
+
+  void _scrollToStep(int step) {
+    final key = _stepKeys[step];
+    if (key?.currentContext == null) return;
+    Scrollable.ensureVisible(
+      key!.currentContext!,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeInOut,
+      alignment: 0.08,
+    );
+  }
+
+  void _onConnectionStepProgress(VfdProvider provider) {
+    if (ConfigurationFlow.isStepComplete(provider, 5)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _scrollToStep(6);
+      });
+    }
+  }
+
+  String _stepGuideMessage(AppLocalizations l10n, int step) {
+    switch (step) {
+      case 1:
+        return l10n.howToUseStep1;
+      case 2:
+        return l10n.selectModel;
+      case 3:
+        return l10n.selectPowerRating;
+      case 4:
+        return l10n.voltageStepSubtitle;
+      case 5:
+        return l10n.howToUseStep2;
+      case 6:
+        return l10n.howToUseStep4;
+      default:
+        return l10n.activeStepHint;
+    }
   }
 
   // Determines if a voltage string is 3-phase
@@ -102,204 +177,48 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final body = Consumer<VfdProvider>(
+      builder: (context, provider, _) {
+        _handleDrawingPromptIfNeeded(provider);
+        return _buildBody(context, l10n, provider);
+      },
+    );
+
+    if (widget.embedInShell) {
+      return Scaffold(
+        body: body,
+        floatingActionButton: _buildVoiceFab(context),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.appTitle),
         actions: [
-          // Smart Search Button
+          IconButton(
+            icon: const Icon(Icons.menu_book_outlined),
+            tooltip: l10n.viewSetupGuide,
+            onPressed: () => SetupGuideSheet.show(context),
+          ),
           IconButton(
             icon: const Icon(Icons.search),
             tooltip: 'Smart Search',
             onPressed: () => _openSmartSearch(context),
           ),
-          // QR Scanner Button
           IconButton(
             icon: const Icon(Icons.qr_code_scanner),
-            tooltip: 'Scan VFD QR Code',
+            tooltip: 'Scan QR',
             onPressed: () => _openQRScanner(context),
-          ),
-          Consumer<VfdProvider>(
-            builder: (context, provider, _) {
-              if (provider.selectedModel == null) return const SizedBox();
-              return IconButton(
-                icon: const Icon(Icons.clear_all),
-                tooltip: l10n.clearAllValues,
-                onPressed: () => _confirmClearValues(context, provider),
-              );
-            },
-          ),
-          Consumer<LocaleProvider>(
-            builder: (context, localeProvider, _) => IconButton(
-              icon: const Icon(Icons.language),
-              tooltip: l10n.changeLanguage,
-              onPressed: () => _showLanguagePicker(context, localeProvider),
-            ),
-          ),
-          Consumer<ThemeProvider>(
-            builder: (context, themeProvider, _) => IconButton(
-              icon: Icon(themeProvider.isDarkMode
-                  ? Icons.light_mode
-                  : Icons.dark_mode),
-              tooltip: l10n.toggleTheme,
-              onPressed: () => themeProvider.toggleTheme(),
-            ),
-          ),
-          Consumer<AuthProvider>(
-            builder: (context, auth, _) {
-              return PopupMenuButton<String>(
-                icon: const Icon(Icons.account_circle),
-                onSelected: (value) {
-                  if (value == 'unit_converter') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const UnitConverterScreen(),
-                      ),
-                    );
-                  } else if (value == 'calculator') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CalculationToolsScreen(),
-                      ),
-                    );
-                  } else if (value == 'compare') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const VFDComparisonScreen(),
-                      ),
-                    );
-                  } else if (value == 'qr_generator') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const QRGeneratorScreen(),
-                      ),
-                    );
-                  } else if (value == 'about') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const AboutScreen(),
-                      ),
-                    );
-                  } else if (value == 'manuals') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ManualImportScreen(),
-                      ),
-                    );
-                  } else if (value == 'recent') {
-                    _showRecentConfigs(context);
-                  } else if (value == 'logout') {
-                    _showLogoutDialog(context);
-                  }
-                },
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    enabled: false,
-                    child: Text(
-                      auth.userEmail ?? l10n.guest,
-                      style:
-                          TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                    ),
-                  ),
-                  const PopupMenuDivider(),
-                  const PopupMenuItem(
-                    value: 'unit_converter',
-                    child: Row(
-                      children: [
-                        Icon(Icons.swap_horiz,
-                            size: 20, color: AppTheme.primary),
-                        SizedBox(width: 8),
-                        Text('Unit Converter'),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'compare',
-                    child: Row(
-                      children: [
-                        Icon(Icons.compare_arrows,
-                            size: 20, color: AppTheme.primary),
-                        SizedBox(width: 8),
-                        Text('Compare VFDs'),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'calculator',
-                    child: Row(
-                      children: [
-                        Icon(Icons.calculate,
-                            size: 20, color: AppTheme.primary),
-                        SizedBox(width: 8),
-                        Text('Calculation Tools'),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'qr_generator',
-                    child: Row(
-                      children: [
-                        Icon(Icons.qr_code_2,
-                            size: 20, color: AppTheme.primary),
-                        SizedBox(width: 8),
-                        Text('Generate QR Code'),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'recent',
-                    child: Row(
-                      children: [
-                        Icon(Icons.history, size: 20, color: AppTheme.primary),
-                        SizedBox(width: 8),
-                        Text('Recent VFDs'),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'manuals',
-                    child: Row(
-                      children: [
-                        Icon(Icons.picture_as_pdf,
-                            size: 20, color: AppTheme.primary),
-                        SizedBox(width: 8),
-                        Text('Import Manuals'),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'about',
-                    child: Row(
-                      children: [
-                        const Icon(Icons.info, size: 20, color: AppTheme.primary),
-                        const SizedBox(width: 8),
-                        Text(l10n.about),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'logout',
-                    child: Row(
-                      children: [
-                        const Icon(Icons.logout, size: 20, color: AppTheme.primary),
-                        const SizedBox(width: 8),
-                        Text(l10n.signOut,
-                            style: const TextStyle(color: Colors.red)),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
           ),
         ],
       ),
-      floatingActionButton: VoiceCommandButton(
+      floatingActionButton: _buildVoiceFab(context),
+      body: body,
+    );
+  }
+
+  Widget _buildVoiceFab(BuildContext context) {
+    return VoiceCommandButton(
         onCommand: (command) {
           if (command == null) return;
           final provider = context.read<VfdProvider>();
@@ -342,91 +261,138 @@ class _HomeScreenState extends State<HomeScreen> {
               break;
           }
         },
+      );
+  }
+
+  Widget _buildBody(
+    BuildContext context,
+    AppLocalizations l10n,
+    VfdProvider provider,
+  ) {
+    final enterprise = context.watch<EnterpriseProvider>();
+    final completed = ConfigurationFlow.completedSteps(provider);
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Theme.of(context).scaffoldBackgroundColor,
+            Theme.of(context).scaffoldBackgroundColor.withOpacity(0.95),
+          ],
+        ),
       ),
-      body: Consumer<VfdProvider>(
-        builder: (context, provider, _) {
-          _handleDrawingPromptIfNeeded(provider);
-          return Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Theme.of(context).scaffoldBackgroundColor,
-                  Theme.of(context).scaffoldBackgroundColor.withOpacity(0.95),
-                ],
-              ),
-            ),
-            child: CustomScrollView(
-              slivers: [
-                // App Bar with Gradient
-                SliverAppBar(
-                  expandedHeight: 120,
-                  floating: false,
-                  pinned: true,
-                  elevation: 0,
-                  backgroundColor: Colors.transparent,
-                  flexibleSpace: Container(
-                    decoration: const BoxDecoration(
-                      gradient: AppTheme.primaryGradient,
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(32),
-                        bottomRight: Radius.circular(32),
-                      ),
+      child: CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          SliverAppBar(
+            expandedHeight: enterprise.isEnterpriseMode ? 148 : 128,
+            floating: false,
+            pinned: true,
+            elevation: 0,
+            backgroundColor: Colors.transparent,
+            actions: widget.embedInShell
+                ? [
+                    IconButton(
+                      icon: const Icon(Icons.help_outline, color: Colors.white),
+                      onPressed: () => SetupGuideSheet.show(context),
                     ),
-                    child: FlexibleSpaceBar(
-                      titlePadding: const EdgeInsets.only(left: 24, bottom: 16),
-                      title: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'VFD Configuration Hub',
-                            style: GoogleFonts.inter(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                              letterSpacing: -0.5,
-                            ),
+                    IconButton(
+                      icon: const Icon(Icons.search, color: Colors.white),
+                      onPressed: () => _openSmartSearch(context),
+                    ),
+                  ]
+                : null,
+            flexibleSpace: Container(
+              decoration: const BoxDecoration(
+                gradient: AppTheme.primaryGradient,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(32),
+                  bottomRight: Radius.circular(32),
+                ),
+              ),
+              child: FlexibleSpaceBar(
+                centerTitle: false,
+                expandedTitleScale: 1.0,
+                titlePadding:
+                    const EdgeInsetsDirectional.only(start: 16, bottom: 14),
+                title: Text(
+                  l10n.configHubTitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                background: Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 52),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.configHubSubtitle,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white.withOpacity(0.85),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Professional Parameter Management',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white.withOpacity(0.8),
-                              letterSpacing: 0.5,
+                        ),
+                        if (enterprise.isEnterpriseMode) ...[
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.18),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Text(
+                              '${enterprise.profile!.orgName} • ${EnterprisePermissions.label(enterprise.profile!.role)}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ],
-                      ),
+                      ],
                     ),
                   ),
                 ),
-
-                // Main Content
-                SliverPadding(
-                  padding: const EdgeInsets.all(20),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      // Quick Actions Row
-                      _buildQuickActionsRow(context),
-                      const SizedBox(height: 32),
-
-                      // Configuration Steps
-                      _buildConfigurationSteps(context, provider),
-                      const SizedBox(height: 32),
-
-                      // Additional Sections
-                      _buildAdditionalSections(context, provider),
-                    ]),
-                  ),
-                ),
-              ],
+              ),
             ),
-          );
-        },
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.all(20),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                ConfigurationProgressHeader(
+                  completedSteps: completed,
+                  totalSteps: ConfigurationFlow.totalSteps,
+                  activeStep: ConfigurationFlow.activeStep(provider),
+                ),
+                const SizedBox(height: 16),
+                _buildQuickActionsRow(context),
+                const SizedBox(height: 24),
+                _buildConfigurationSteps(context, provider),
+                const SizedBox(height: 24),
+                _buildAdditionalSections(context, provider),
+              ]),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -478,8 +444,14 @@ class _HomeScreenState extends State<HomeScreen> {
     final l10n = AppLocalizations.of(context)!;
     final ratings = provider.powerRatings;
     if (ratings.isEmpty) return const SizedBox();
-    final minKw = ratings.reduce((a, b) => a < b ? a : b);
-    final maxKw = ratings.reduce((a, b) => a > b ? a : b);
+
+    final vendor = provider.selectedVendor?.name;
+    final model = provider.selectedModelName;
+    final range = vendor != null && model != null
+        ? SupportedVendors.modelPowerRange(vendor, model, ratings)
+        : null;
+    final minKw = range?.minKw ?? ratings.first;
+    final maxKw = range?.maxKw ?? ratings.last;
     final minHp = (minKw * 1.341).toStringAsFixed(2);
     final maxHp = (maxKw * 1.341).toStringAsFixed(2);
 
@@ -542,8 +514,38 @@ class _HomeScreenState extends State<HomeScreen> {
             l10n.powerOptionsAvailable(ratings.length),
             style: TextStyle(fontSize: 11, color: Colors.deepOrange.shade600),
           ),
+          const SizedBox(height: 4),
+          Text(
+            '${ratings.length} ratings from ${minKw.toStringAsFixed(minKw.truncateToDouble() == minKw ? 0 : 1)} kW to ${maxKw.toStringAsFixed(maxKw.truncateToDouble() == maxKw ? 0 : 1)} kW',
+            style: TextStyle(fontSize: 11, color: Colors.deepOrange.shade700),
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPowerRatingPicker(BuildContext context, VfdProvider provider) {
+    final selected = provider.selectedPowerRating;
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: provider.powerRatings.map((rating) {
+        final isSelected = selected == rating;
+        return ChoiceChip(
+          label: Text('${rating.toStringAsFixed(1)} kW'),
+          selected: isSelected,
+          onSelected: (_) {
+            provider.selectPowerRating(rating);
+            _scrollToStep(4);
+          },
+          selectedColor: AppTheme.primary.withOpacity(0.2),
+          labelStyle: GoogleFonts.inter(
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            fontSize: 12,
+            color: isSelected ? AppTheme.primary : null,
+          ),
+        );
+      }).toList(),
     );
   }
 
@@ -645,8 +647,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     sublabel: l10n.communicationSub,
                     selected: isComm,
                     color: Colors.purple,
-                    onTap: () => provider
-                        .setConnectionType(ConnectionType.communication),
+                    onTap: () {
+                      provider.setConnectionType(ConnectionType.communication);
+                    },
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -657,8 +660,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     sublabel: l10n.hardWireSub,
                     selected: !isComm,
                     color: Colors.teal,
-                    onTap: () =>
-                        provider.setConnectionType(ConnectionType.hardWire),
+                    onTap: () {
+                      provider.setConnectionType(ConnectionType.hardWire);
+                      _onConnectionStepProgress(provider);
+                    },
                   ),
                 ),
               ],
@@ -849,7 +854,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     value: provider.selectedProtocol,
                     items: provider.protocols,
                     onChanged: (p) {
-                      if (p != null) provider.selectProtocol(p);
+                      if (p != null) {
+                        provider.selectProtocol(p);
+                        _onConnectionStepProgress(provider);
+                      }
                     },
                     itemBuilder: (p) => DropdownMenuItem(
                       value: p,
@@ -976,7 +984,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   value: provider.selectedCommCard,
                   items: cards,
                   onChanged: (c) {
-                    if (c != null) provider.selectCommCard(c);
+                    if (c != null) {
+                      provider.selectCommCard(c);
+                      _onConnectionStepProgress(provider);
+                    }
                   },
                   itemBuilder: (c) => DropdownMenuItem(
                     value: c,
@@ -1054,6 +1065,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildParameterSection(BuildContext context, VfdProvider provider) {
     final l10n = AppLocalizations.of(context)!;
+    final enterprise = context.watch<EnterpriseProvider>();
+    final canEdit = enterprise.can(AppPermission.editParameters);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1068,6 +1081,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 12),
           ParameterEditor(
             parametersByGroup: provider.parametersByGroup,
+            readOnly: !canEdit,
             onValueChanged: (id, val) => provider.saveParameterValue(id, val),
           ),
           const SizedBox(height: 16),
@@ -1189,6 +1203,44 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                 ),
                 const SizedBox(height: 16),
+                if (NameplateOcrService.isSupported)
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.document_scanner),
+                      label: const Text('Scan nameplate (camera)'),
+                      onPressed: () async {
+                        final specs = await NameplateOcrService.scanFromCamera();
+                        if (!ctx.mounted || specs == null) {
+                          if (ctx.mounted && specs == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Could not read nameplate — enter manually'),
+                              ),
+                            );
+                          }
+                          return;
+                        }
+                        setS(() {
+                          if (specs.powerKw != null) {
+                            controllers['kwCtrl']!.text = specs.powerKw.toString();
+                          }
+                          if (specs.voltage != null) {
+                            controllers['voltCtrl']!.text = specs.voltage.toString();
+                          }
+                          if (specs.current != null) {
+                            controllers['ampCtrl']!.text = specs.current.toString();
+                          }
+                          if (specs.speedRpm != null) {
+                            controllers['rpmCtrl']!.text = specs.speedRpm!.toInt().toString();
+                          }
+                          controllers['hzCtrl']!.text = specs.frequencyHz.toString();
+                          connection = specs.connection;
+                        });
+                      },
+                    ),
+                  ),
+                if (NameplateOcrService.isSupported) const SizedBox(height: 8),
                 Row(
                   children: [
                     Expanded(
@@ -1369,23 +1421,55 @@ class _HomeScreenState extends State<HomeScreen> {
     required String subtitle,
     required Widget child,
     bool isCompleted = false,
+    bool isActive = false,
+    bool showGuide = false,
+    String? guideMessage,
   }) {
-    return AppCard(
-      title: title,
-      subtitle: subtitle,
-      icon: isCompleted ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
-      accentColor: isCompleted ? Colors.green : AppTheme.primaryBlue,
-      showGradient: isCompleted,
-      elevation: isCompleted ? 8 : 4,
-      padding: const EdgeInsets.all(24),
-      child: child,
+    final l10n = AppLocalizations.of(context)!;
+    return KeyedSubtree(
+      key: _stepKeys[step],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (showGuide && guideMessage != null)
+            StepGuideBanner(message: guideMessage),
+          AppCard(
+            title: title,
+            subtitle: subtitle,
+            icon: isCompleted
+                ? Icons.check_circle_rounded
+                : Icons.radio_button_unchecked,
+            accentColor: isCompleted ? AppTheme.success : AppTheme.primaryBlue,
+            showGradient: isCompleted,
+            stepNumber: step,
+            stepTotal: ConfigurationFlow.totalSteps,
+            isActiveStep: isActive,
+            isCompletedStep: isCompleted,
+            padding: const EdgeInsets.all(20),
+            child: child,
+          ),
+          if (isActive && !isCompleted)
+            Padding(
+              padding: const EdgeInsets.only(top: 8, left: 4),
+              child: Text(
+                l10n.activeStepHint,
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  color: AppTheme.grey500,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
   Widget _buildQuickActionsRow(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AppCard(
-      title: 'Quick Actions',
-      subtitle: 'Frequently used tools and features',
+      title: l10n.quickActionsTitle,
+      subtitle: l10n.quickActionsSubtitle,
       icon: Icons.flash_on,
       accentColor: AppTheme.primaryBlue,
       showGradient: true,
@@ -1485,67 +1569,104 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildConfigurationSteps(BuildContext context, VfdProvider provider) {
+    final l10n = AppLocalizations.of(context)!;
+    final completed = ConfigurationFlow.completedSteps(provider);
+    final active = ConfigurationFlow.activeStep(provider);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Header
         Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 20),
-          child: Row(
+          padding: const EdgeInsets.only(left: 4, bottom: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppTheme.secondaryPurple.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(
-                  Icons.settings_applications_rounded,
-                  color: AppTheme.secondaryPurple,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Column(
+              Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Configuration Steps',
-                    style: GoogleFonts.inter(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: Theme.of(context).textTheme.titleLarge?.color,
-                      letterSpacing: -0.5,
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: AppTheme.secondaryPurple.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(
+                      Icons.settings_applications_rounded,
+                      color: AppTheme.secondaryPurple,
+                      size: 24,
                     ),
                   ),
-                  Text(
-                    'Follow the steps to configure your VFD',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.configStepsTitle,
+                          style: GoogleFonts.inter(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color:
+                                Theme.of(context).textTheme.titleLarge?.color,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        Text(
+                          l10n.configStepsSubtitle,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.color
+                                ?.withOpacity(0.7),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: () => SetupGuideSheet.show(context),
+                  icon: const Icon(Icons.help_outline, size: 18),
+                  label: Text(l10n.viewSetupGuide),
+                ),
+              ),
             ],
           ),
         ),
+        ConfigurationProgressHeader(
+          completedSteps: completed,
+          totalSteps: ConfigurationFlow.totalSteps,
+          activeStep: active,
+        ),
+        const SizedBox(height: 24),
 
         // Step 1: Vendor Selection
         _buildStepCard(
           step: 1,
-          title: AppLocalizations.of(context)!.vendor,
-          subtitle: AppLocalizations.of(context)!.selectVendor,
+          title: l10n.vendor,
+          subtitle: l10n.selectVendor,
           isCompleted: provider.selectedVendor != null,
+          isActive: active == 1,
+          showGuide: active == 1,
+          guideMessage: _stepGuideMessage(l10n, 1),
           child: _buildDropdown<Vendor>(
             context: context,
-            hint: AppLocalizations.of(context)!.selectVendor,
+            hint: l10n.selectVendor,
             value: provider.selectedVendor,
             items: provider.vendors,
             onChanged: (v) {
-              if (v != null) provider.selectVendor(v);
+              if (v != null) {
+                provider.selectVendor(v);
+                _scrollToStep(2);
+              }
             },
             itemBuilder: (v) => DropdownMenuItem(
               value: v,
@@ -1571,16 +1692,22 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 20),
           _buildStepCard(
             step: 2,
-            title: AppLocalizations.of(context)!.model,
-            subtitle: AppLocalizations.of(context)!.selectModel,
+            title: l10n.model,
+            subtitle: l10n.selectModel,
             isCompleted: provider.selectedModelName != null,
+            isActive: active == 2,
+            showGuide: active == 2,
+            guideMessage: _stepGuideMessage(l10n, 2),
             child: _buildDropdown<String>(
               context: context,
-              hint: AppLocalizations.of(context)!.selectModel,
+              hint: l10n.selectModel,
               value: provider.selectedModelName,
               items: provider.modelNames,
               onChanged: (name) {
-                if (name != null) provider.selectModelName(name);
+                if (name != null) {
+                  provider.selectModelName(name);
+                  _scrollToStep(3);
+                }
               },
               itemBuilder: (name) => DropdownMenuItem(
                 value: name,
@@ -1601,21 +1728,29 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 20),
           _buildStepCard(
             step: 3,
-            title: AppLocalizations.of(context)!.powerRatingLabel,
-            subtitle: AppLocalizations.of(context)!.selectPowerRating,
+            title: l10n.powerRatingLabel,
+            subtitle: l10n.selectPowerRating,
             isCompleted: provider.selectedPowerRating != null,
+            isActive: active == 3,
+            showGuide: active == 3,
+            guideMessage: _stepGuideMessage(l10n, 3),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildPowerRangeCard(context, provider),
                 const SizedBox(height: 16),
+                _buildPowerRatingPicker(context, provider),
+                const SizedBox(height: 12),
                 _buildDropdown<double>(
                   context: context,
                   hint: AppLocalizations.of(context)!.selectPowerRating,
                   value: provider.selectedPowerRating,
                   items: provider.powerRatings,
                   onChanged: (rating) {
-                    if (rating != null) provider.selectPowerRating(rating);
+                    if (rating != null) {
+                      provider.selectPowerRating(rating);
+                      _scrollToStep(4);
+                    }
                   },
                   itemBuilder: (rating) => DropdownMenuItem(
                     value: rating,
@@ -1638,16 +1773,22 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 20),
           _buildStepCard(
             step: 4,
-            title: 'Voltage / Phase',
-            subtitle: 'Select input voltage and phase',
+            title: l10n.voltageStepTitle,
+            subtitle: l10n.voltageStepSubtitle,
             isCompleted: provider.selectedVoltage != null,
+            isActive: active == 4,
+            showGuide: active == 4,
+            guideMessage: _stepGuideMessage(l10n, 4),
             child: _buildDropdown<String>(
               context: context,
-              hint: 'Select Voltage',
+              hint: l10n.voltageStepTitle,
               value: provider.selectedVoltage,
               items: provider.voltages,
               onChanged: (v) {
-                if (v != null) provider.selectVoltage(v);
+                if (v != null) {
+                  provider.selectVoltage(v);
+                  _scrollToStep(5);
+                }
               },
               itemBuilder: (v) => DropdownMenuItem(
                 value: v,
@@ -1673,28 +1814,45 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
 
-        // Connection Type Selection (after voltage)
+        // Step 5: Connection Type Selection (after voltage)
         if (provider.selectedVoltage != null) ...[
           const SizedBox(height: 20),
-          _buildConnectionTypeSection(context, provider),
+          _buildStepCard(
+            step: 5,
+            title: l10n.connectionStepTitle,
+            subtitle: l10n.connectionStepSubtitle,
+            isCompleted: ConfigurationFlow.isStepComplete(provider, 5),
+            isActive: active == 5,
+            showGuide: active == 5,
+            guideMessage: l10n.howToUseStep3,
+            child: _buildConnectionTypeSection(context, provider),
+          ),
         ],
       ],
     );
   }
 
   Widget _buildAdditionalSections(BuildContext context, VfdProvider provider) {
+    final l10n = AppLocalizations.of(context)!;
+    final active = ConfigurationFlow.activeStep(provider);
+    final paramsUnlocked = ConfigurationFlow.isStepComplete(provider, 5);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Parameters Section
-        if (provider.selectedVoltage != null &&
-            ((provider.connectionType == ConnectionType.hardWire) ||
-            (provider.connectionType == ConnectionType.communication &&
-                provider.selectedProtocol != null &&
-                (provider.selectedProtocol!.type == 'Direct' ||
-                    provider.selectedCommCard != null)))) ...[
+        // Step 6: Parameters Section
+        if (paramsUnlocked) ...[
           const SizedBox(height: 32),
-          _buildParameterSection(context, provider),
+          _buildStepCard(
+            step: 6,
+            title: l10n.parametersStepTitle,
+            subtitle: l10n.parametersStepSubtitle,
+            isCompleted: provider.parameters.isNotEmpty,
+            isActive: active == 6,
+            showGuide: active == 6,
+            guideMessage: l10n.howToUseStep4,
+            child: _buildParameterSection(context, provider),
+          ),
         ],
 
         // Drawings Section
@@ -1884,6 +2042,81 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _exportConfiguration(BuildContext context) async {
+    final enterprise = context.read<EnterpriseProvider>();
+    if (!enterprise.guard(context, AppPermission.exportConfiguration)) return;
+
+    final provider = context.read<VfdProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+
+    if (provider.selectedVendor == null || provider.selectedModelName == null) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Select vendor and model before exporting'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    final ok = await provider.shareConfigurationExport();
+    if (!mounted) return;
+    if (ok) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Configuration ready to share'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else if (provider.errorMessage != null) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(provider.errorMessage!),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _importConfiguration(BuildContext context) async {
+    final enterprise = context.read<EnterpriseProvider>();
+    if (!enterprise.guard(context, AppPermission.importConfiguration)) return;
+
+    final provider = context.read<VfdProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+
+    final error = await provider.importConfigurationFromFile();
+    if (!mounted) return;
+
+    if (error != null) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(error), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    messenger.showSnackBar(
+      const SnackBar(
+        content: Text('Configuration imported successfully'),
+        backgroundColor: Colors.green,
+      ),
+    );
+    _scrollToStep(ConfigurationFlow.activeStep(provider));
+  }
+
+  Future<void> _openSavedProjects(BuildContext context) async {
+    final enterprise = context.read<EnterpriseProvider>();
+    if (!enterprise.guard(context, AppPermission.manageProjects)) return;
+
+    final step = await Navigator.push<int>(
+      context,
+      MaterialPageRoute(builder: (_) => const SavedProjectsScreen()),
+    );
+    if (step != null && mounted) {
+      _scrollToStep(step);
+    }
   }
 
   Future<void> _showRecentConfigs(BuildContext context) async {

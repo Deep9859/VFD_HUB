@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/security/input_validation_service.dart';
+import '../../core/theme/app_form_styles.dart';
 import '../../data/models/vfd_parameter.dart';
 
 class ParameterEditor extends StatefulWidget {
   final Map<String, List<VfdParameter>> parametersByGroup;
   final Function(int, String) onValueChanged;
+  final bool readOnly;
 
   const ParameterEditor({
     super.key,
     required this.parametersByGroup,
     required this.onValueChanged,
+    this.readOnly = false,
   });
 
   @override
@@ -135,6 +138,18 @@ class _ParameterEditorState extends State<ParameterEditor> {
                             color: Colors.grey.shade600,
                           ),
                     ),
+                    if (widget.readOnly)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Chip(
+                          label: const Text(
+                            'View only — viewer role',
+                            style: TextStyle(fontSize: 11),
+                          ),
+                          backgroundColor: Colors.orange.shade100,
+                          visualDensity: VisualDensity.compact,
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -518,44 +533,33 @@ class _ParameterEditorState extends State<ParameterEditor> {
                     ),
                     child: TextField(
                       controller: controller,
-                      style: const TextStyle(fontSize: 16),
-                      decoration: InputDecoration(
+                      readOnly: widget.readOnly,
+                      style: AppFormStyles.fieldText(context),
+                      decoration: AppFormStyles.decoration(
+                        context,
                         labelText: 'Parameter Value',
                         hintText: 'Enter value...',
-                        labelStyle: TextStyle(
-                          color: Theme.of(context).primaryColor,
-                        ),
                         suffixText: hasUserValue ? 'Custom' : 'Default',
                         suffixStyle: TextStyle(
                           color: hasUserValue
-                              ? Colors.green.shade700
-                              : Colors.grey.shade500,
+                              ? Theme.of(context).colorScheme.tertiary
+                              : Theme.of(context).colorScheme.onSurfaceVariant,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                        ),
-                        filled: true,
-                        fillColor: Theme.of(context).cardColor,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(
                             color: isModified
-                                ? Colors.orange.shade300
-                                : Colors.grey.shade300,
+                                ? Theme.of(context).colorScheme.error.withOpacity(0.6)
+                                : Theme.of(context).dividerColor,
                             width: isModified ? 2 : 1,
                           ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(
-                            color: Theme.of(context).primaryColor,
+                            color: Theme.of(context).colorScheme.primary,
                             width: 2,
                           ),
                         ),
@@ -565,12 +569,15 @@ class _ParameterEditorState extends State<ParameterEditor> {
                         FilteringTextInputFormatter.allow(
                             RegExp(r'[0-9a-zA-Z._\-]')),
                       ],
-                      onSubmitted: (value) {
-                        widget.onValueChanged(param.id, value);
-                      },
+                      onSubmitted: widget.readOnly
+                          ? null
+                          : (value) {
+                              widget.onValueChanged(param.id, value);
+                            },
                     ),
                   ),
                 ),
+                if (!widget.readOnly) ...[
                 const SizedBox(width: 12),
                 Container(
                   decoration: BoxDecoration(
@@ -656,6 +663,7 @@ class _ParameterEditorState extends State<ParameterEditor> {
                     },
                   ),
                 ),
+                ],
               ],
             ),
 

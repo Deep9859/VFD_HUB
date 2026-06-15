@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/security/input_validation_service.dart';
+import '../../core/theme/app_form_styles.dart';
 import '../../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 import 'signup_screen.dart';
-import '../screens/home_screen.dart';
+import '../screens/main_shell_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -93,9 +94,10 @@ class _LoginScreenState extends State<LoginScreen> {
             controller: _emailCtrl,
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
-            decoration: const InputDecoration(
+            decoration: AppFormStyles.decoration(
+              context,
               labelText: 'Email',
-              prefixIcon: Icon(Icons.email_outlined, size: 20),
+              prefixIcon: const Icon(Icons.email_outlined, size: 20),
             ),
             validator: (v) {
               if (v == null || v.isEmpty) return 'Email required';
@@ -109,7 +111,8 @@ class _LoginScreenState extends State<LoginScreen> {
             obscureText: _obscure,
             textInputAction: TextInputAction.done,
             onFieldSubmitted: (_) => _signIn(),
-            decoration: InputDecoration(
+            decoration: AppFormStyles.decoration(
+              context,
               labelText: 'Password',
               prefixIcon: const Icon(Icons.lock_outlined, size: 20),
               suffixIcon: IconButton(
@@ -175,7 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
               await auth.signInAsGuest();
               if (auth.isAuthenticated && mounted) {
                 Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const HomeScreen()),
+                  MaterialPageRoute(builder: (_) => const MainShellScreen()),
                   (_) => false,
                 );
               }
@@ -217,7 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       if (ok && mounted) {
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          MaterialPageRoute(builder: (_) => const MainShellScreen()),
           (_) => false,
         );
       }

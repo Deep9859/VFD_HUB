@@ -1,14 +1,17 @@
+import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:open_file/open_file.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:vfd_param_app/core/exceptions/vfd_exceptions.dart';
 import 'package:vfd_param_app/data/database/database_helper.dart';
 
 import '../../data/models/protocol_model.dart';
+import '../../core/services/custom_vendor_service.dart';
 import '../../data/models/vendor_model.dart';
 import '../../data/models/vfd_model.dart';
 import '../../presentation/screens/pdf_viewer_screen.dart';
@@ -18,6 +21,9 @@ import '../../data/models/vfd_manual.dart';
 import '../../data/models/vfd_parameter.dart';
 import '../../data/datasources/vfd_static_data.dart';
 import '../../core/services/widget_service.dart';
+import '../../core/config/supported_vendors.dart';
+import '../../core/services/audit_log_service.dart';
+import '../../data/models/audit_event.dart';
 
 enum ConnectionType { communication, hardWire }
 
@@ -128,7 +134,26 @@ class VfdProvider with ChangeNotifier {
     _useStaticFallback = false;
     notifyListeners();
     try {
-      _vendors = await _dbHelper.getAllVendors();
+      _vendors = SupportedVendors.filterVendors(
+        await _dbHelper.getAllVendors(),
+      );
+      final custom = await CustomVendorService.getAll();
+      var nextId = (_vendors.isEmpty ? 0 : _vendors.map((v) => v.id).reduce((a, b) => a > b ? a : b)) + 1000;
+      for (final c in custom) {
+        if (_vendors.any((v) => v.name.toLowerCase() == c.name.toLowerCase())) {
+          continue;
+        }
+        _vendors.add(Vendor(
+          id: nextId++,
+          name: c.name,
+          logo: '',
+          description: c.description.isEmpty ? 'Custom vendor' : c.description,
+        ));
+      }
+      _vendors.sort(
+        (a, b) => SupportedVendors.sortIndex(a.name)
+            .compareTo(SupportedVendors.sortIndex(b.name)),
+      );
       if (_vendors.isEmpty) {
         _loadStaticVendors();
       }
@@ -146,7 +171,7 @@ class VfdProvider with ChangeNotifier {
   }
 
   void _loadStaticVendors() {
-    _vendors = VfdStaticData.vendorNames
+    _vendors = SupportedVendors.namesInOrder
         .asMap()
         .entries
         .map((entry) => Vendor(
@@ -180,7 +205,9 @@ class VfdProvider with ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
     try {
-      _modelNames = await _dbHelper.getDistinctModelNamesByVendor(vendor.id);
+      final fromDb =
+          await _dbHelper.getDistinctModelNamesByVendor(vendor.id);
+      _modelNames = SupportedVendors.filterModelNames(vendor.name, fromDb);
     } on DatabaseException catch (e) {
       _errorMessage = e.userMessage;
       e.log();
@@ -209,17 +236,18 @@ class VfdProvider with ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
     try {
-      _powerRatings = await _dbHelper.getPowerRatingsByVendorAndName(
-          _selectedVendor!.id, name);
-    } on DataNotFoundException catch (e) {
-      // Fall back to static model data only if DB has no entry for this vendor/model.
-      final vendorName = _selectedVendor?.name;
-      if (vendorName != null) {
-        _powerRatings = VfdStaticData.getPowerRatings(vendorName, name);
+      final vendorName = _selectedVendor!.name;
+      List<double> fromDb = [];
+      try {
+        fromDb = await _dbHelper.getPowerRatingsByVendorAndName(
+            _selectedVendor!.id, name);
+      } on DataNotFoundException {
+        fromDb = [];
       }
+      _powerRatings =
+          SupportedVendors.resolvePowerRatings(vendorName, name, fromDb);
       if (_powerRatings.isEmpty) {
         _errorMessage = 'No power ratings available for model: $name';
-        e.log();
       }
     } on DatabaseException catch (e) {
       _errorMessage = e.userMessage;
@@ -472,6 +500,14 @@ class VfdProvider with ChangeNotifier {
         _parameters[idx] = _parameters[idx].copyWith(userValue: value);
         notifyListeners();
       }
+      final param = _parameters.where((p) => p.id == parameterId).firstOrNull;
+      if (param != null) {
+        await AuditLogService.log(
+          category: AuditCategory.parameter,
+          action: 'Parameter updated',
+          detail: '${param.paramName} = $value',
+        );
+      }
     } catch (e) {
       _errorMessage = 'Failed to save value: $e';
       notifyListeners();
@@ -504,6 +540,15 @@ class VfdProvider with ChangeNotifier {
             _protocolParameters[idx].copyWith(userValue: value);
         notifyListeners();
       }
+      final param =
+          _protocolParameters.where((p) => p.id == parameterId).firstOrNull;
+      if (param != null) {
+        await AuditLogService.log(
+          category: AuditCategory.parameter,
+          action: 'Protocol parameter updated',
+          detail: '${param.paramName} = $value',
+        );
+      }
     } catch (e) {
       _errorMessage = 'Failed to save value: $e';
       notifyListeners();
@@ -525,6 +570,9 @@ class VfdProvider with ChangeNotifier {
 
   Map<String, dynamic> exportConfiguration() {
     return {
+      'schemaVersion': 1,
+      'exportedAt': DateTime.now().toIso8601String(),
+      'app': 'VFD Hub',
       'vendor': _selectedVendor?.name,
       'model': _selectedModelName,
       'powerRating': _selectedPowerRating,
@@ -532,14 +580,178 @@ class VfdProvider with ChangeNotifier {
       'connectionType': _connectionType.name,
       'protocol': _selectedProtocol?.name,
       'commCard': _selectedCommCard,
-      'parameters': _parameters.map((p) => {
-        'id': p.id,
-        'name': p.paramName,
-        'value': p.userValue ?? p.defaultValue,
-      }).toList(),
+      'parameters': _parameters
+          .map((p) => {
+                'id': p.id,
+                'name': p.paramName,
+                'value': p.userValue ?? p.defaultValue,
+              })
+          .toList(),
+      'protocolParameters': _protocolParameters
+          .map((p) => {
+                'id': p.id,
+                'name': p.paramName,
+                'value': p.userValue ?? p.defaultValue,
+              })
+          .toList(),
     };
   }
 
+  /// Share current configuration as a JSON file.
+  Future<bool> shareConfigurationExport() async {
+    if (_selectedVendor == null || _selectedModelName == null) {
+      _errorMessage = 'Select a vendor and model before exporting';
+      notifyListeners();
+      return false;
+    }
+    try {
+      final json = const JsonEncoder.withIndent('  ').convert(exportConfiguration());
+      final safeName =
+          '${_selectedVendor!.name}_${_selectedModelName!}'.replaceAll(RegExp(r'[^\w\-]'), '_');
+      await Share.shareXFiles(
+        [
+          XFile.fromData(
+            utf8.encode(json),
+            name: 'vfd_config_$safeName.json',
+            mimeType: 'application/json',
+          ),
+        ],
+        subject: 'VFD Hub configuration',
+      );
+      return true;
+    } catch (e) {
+      _errorMessage = 'Export failed: $e';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Pick a JSON file and restore configuration state.
+  Future<String?> importConfigurationFromFile() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+      if (result == null || result.files.single.bytes == null) {
+        return null;
+      }
+      final text = utf8.decode(result.files.single.bytes!);
+      final data = jsonDecode(text) as Map<String, dynamic>;
+      return importConfiguration(data);
+    } catch (e) {
+      return 'Invalid configuration file: $e';
+    }
+  }
+
+  /// Apply a previously exported configuration map. Returns null on success.
+  Future<String?> importConfiguration(Map<String, dynamic> config) async {
+    final vendorName = config['vendor'] as String?;
+    final modelName = config['model'] as String?;
+    if (vendorName == null || modelName == null) {
+      return 'Configuration must include vendor and model';
+    }
+
+    if (_vendors.isEmpty) {
+      await loadVendors();
+    }
+
+    final vendor = _vendors.cast<Vendor?>().firstWhere(
+          (v) => v!.name.toLowerCase() == vendorName.toLowerCase(),
+          orElse: () => null,
+        );
+    if (vendor == null) {
+      return 'Vendor "$vendorName" is not available in this app';
+    }
+
+    await selectVendor(vendor);
+    if (!_modelNames.contains(modelName)) {
+      return 'Model "$modelName" not found for $vendorName';
+    }
+    await selectModelName(modelName);
+
+    final power = config['powerRating'];
+    if (power != null) {
+      final powerKw = (power as num).toDouble();
+      if (!_powerRatings.contains(powerKw)) {
+        return 'Power rating $powerKw kW not available for $modelName';
+      }
+      await selectPowerRating(powerKw);
+    }
+
+    final voltage = config['voltage'] as String?;
+    if (voltage != null) {
+      if (!_voltages.contains(voltage)) {
+        return 'Voltage "$voltage" not available for this model';
+      }
+      await selectVoltage(voltage);
+    }
+
+    final conn = config['connectionType'] as String?;
+    if (conn == ConnectionType.communication.name) {
+      setConnectionType(ConnectionType.communication);
+      final protocolName = config['protocol'] as String?;
+      if (protocolName != null) {
+        final protocol = _protocols.cast<Protocol?>().firstWhere(
+              (p) => p!.name.toLowerCase() == protocolName.toLowerCase(),
+              orElse: () => null,
+            );
+        if (protocol == null) {
+          return 'Protocol "$protocolName" not found';
+        }
+        await selectProtocol(protocol);
+      }
+      final commCard = config['commCard'] as String?;
+      if (commCard != null && commCard.isNotEmpty) {
+        selectCommCard(commCard);
+      }
+    } else {
+      setConnectionType(ConnectionType.hardWire);
+    }
+
+    await _applyImportedParameterValues(
+      config['parameters'] as List<dynamic>?,
+      _parameters,
+      saveParameterValue,
+    );
+    await _applyImportedParameterValues(
+      config['protocolParameters'] as List<dynamic>?,
+      _protocolParameters,
+      saveProtocolParameterValue,
+    );
+
+    await AuditLogService.log(
+      category: AuditCategory.configuration,
+      action: 'Configuration imported',
+      detail: '$vendorName $modelName',
+    );
+
+    return null;
+  }
+
+  Future<void> _applyImportedParameterValues(
+    List<dynamic>? items,
+    List<VfdParameter> current,
+    Future<void> Function(int id, String value) save,
+  ) async {
+    if (items == null || _selectedModel == null) return;
+    for (final raw in items) {
+      if (raw is! Map) continue;
+      final id = raw['id'] as int?;
+      final name = raw['name'] as String?;
+      final value = raw['value']?.toString();
+      if (value == null) continue;
+
+      final match = id != null
+          ? current.where((p) => p.id == id).firstOrNull
+          : current
+              .where((p) => p.paramName.toLowerCase() == name?.toLowerCase())
+              .firstOrNull;
+      if (match != null) {
+        await save(match.id, value);
+      }
+    }
+  }
   // ── File Operations ───────────────────────────────────────────────
   Future<String?> pickFile() async {
     try {

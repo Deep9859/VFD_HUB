@@ -342,7 +342,6 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                 controller: vendorController,
                 decoration: const InputDecoration(
                   labelText: 'Vendor (e.g., ABB)',
-                  border: OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 12),
@@ -350,7 +349,6 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                 controller: modelController,
                 decoration: const InputDecoration(
                   labelText: 'Model (e.g., ACS580)',
-                  border: OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 12),
@@ -358,7 +356,6 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                 controller: powerController,
                 decoration: const InputDecoration(
                   labelText: 'Power (kW) - Optional',
-                  border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,
               ),
@@ -367,7 +364,6 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                 controller: serialController,
                 decoration: const InputDecoration(
                   labelText: 'Serial Number - Optional',
-                  border: OutlineInputBorder(),
                 ),
               ),
             ],

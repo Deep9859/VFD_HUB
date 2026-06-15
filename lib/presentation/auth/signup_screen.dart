@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/security/input_validation_service.dart';
+import '../../core/theme/app_form_styles.dart';
 import '../../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
-import '../screens/home_screen.dart';
+import '../screens/main_shell_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -119,9 +120,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
             controller: _nameCtrl,
             textInputAction: TextInputAction.next,
             textCapitalization: TextCapitalization.words,
-            decoration: const InputDecoration(
+            decoration: AppFormStyles.decoration(
+              context,
               labelText: 'Full Name',
-              prefixIcon: Icon(Icons.person_outline, size: 20),
+              prefixIcon: const Icon(Icons.person_outline, size: 20),
             ),
             validator: (v) {
               if (v == null || v.isEmpty) return 'Name required';
@@ -134,9 +136,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
             controller: _emailCtrl,
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
-            decoration: const InputDecoration(
+            decoration: AppFormStyles.decoration(
+              context,
               labelText: 'Email',
-              prefixIcon: Icon(Icons.email_outlined, size: 20),
+              prefixIcon: const Icon(Icons.email_outlined, size: 20),
             ),
             validator: (v) {
               if (v == null || v.isEmpty) return 'Email required';
@@ -149,7 +152,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
             controller: _passCtrl,
             obscureText: _obscurePass,
             textInputAction: TextInputAction.next,
-            decoration: InputDecoration(
+            decoration: AppFormStyles.decoration(
+              context,
               labelText: 'Password',
               prefixIcon: const Icon(Icons.lock_outlined, size: 20),
               suffixIcon: IconButton(
@@ -172,7 +176,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
             obscureText: _obscureConfirm,
             textInputAction: TextInputAction.done,
             onFieldSubmitted: (_) => _signUp(),
-            decoration: InputDecoration(
+            decoration: AppFormStyles.decoration(
+              context,
               labelText: 'Confirm Password',
               prefixIcon: const Icon(Icons.lock_outlined, size: 20),
               suffixIcon: IconButton(
@@ -233,7 +238,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       );
       if (ok && mounted) {
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          MaterialPageRoute(builder: (_) => const MainShellScreen()),
           (_) => false,
         );
       }

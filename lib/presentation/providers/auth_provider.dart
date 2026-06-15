@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/security/input_validation_service.dart';
 import '../../core/security/security_service.dart';
+import '../../core/services/audit_log_service.dart';
 
 enum AuthState { unknown, authenticated, unauthenticated }
 
@@ -18,6 +19,8 @@ class AuthProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _state == AuthState.authenticated;
 
+  void _syncAuditUser() => AuditLogService.setActiveUser(_userEmail);
+
   Future<void> checkAuthStatus() async {
     _isLoading = true;
     notifyListeners();
@@ -31,6 +34,7 @@ class AuthProvider with ChangeNotifier {
         _userId = storedUserId;
         _userEmail = storedUserEmail;
         _state = AuthState.authenticated;
+        _syncAuditUser();
       } else {
         _state = AuthState.unauthenticated;
       }
@@ -127,6 +131,7 @@ class AuthProvider with ChangeNotifier {
       _userId = userId;
       _userEmail = email;
       _state = AuthState.authenticated;
+      _syncAuditUser();
 
       _isLoading = false;
       notifyListeners();
@@ -177,6 +182,7 @@ class AuthProvider with ChangeNotifier {
         _userId = storedUserId;
         _userEmail = email;
         _state = AuthState.authenticated;
+        _syncAuditUser();
 
         _isLoading = false;
         notifyListeners();
@@ -204,6 +210,7 @@ class AuthProvider with ChangeNotifier {
       _userId = null;
       _userEmail = null;
       _state = AuthState.unauthenticated;
+      _syncAuditUser();
     } catch (e) {
       _errorMessage = 'Sign out failed: $e';
     }
@@ -226,6 +233,7 @@ class AuthProvider with ChangeNotifier {
       _userId = guestUserId;
       _userEmail = 'guest@example.com';
       _state = AuthState.authenticated;
+      _syncAuditUser();
       await SecurityService.enableGuestMode();
       await SecurityService.saveUserId(guestUserId);
       await SecurityService.saveAuthToken(

@@ -41,13 +41,32 @@ class HomeScreenWidgetService {
   static const _recentKey = 'widget_recent_configs';
   static const _maxRecent = 5;
 
-  static Future<void> saveWidgetData(VFDWidgetData data) async {
+  static Future<void> restoreRecentConfigs(List<VFDWidgetData> items) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _recentKey,
+      items.map((e) => jsonEncode(e.toJson())).toList(),
+    );
+    await _syncNativeWidget(items);
+  }
+
+  static Future<void> _syncNativeWidget(List<VFDWidgetData> recent) async {
     try {
-      await _channel.invokeMethod('updateWidget', data.toJson());
+      if (recent.isEmpty) return;
+      final primary = recent.first;
+      await _channel.invokeMethod('updateWidget', {
+        ...primary.toJson(),
+        'recentConfigs': recent.map((e) => e.toJson()).toList(),
+      });
     } catch (_) {
       // Platform channel not available on all platforms.
     }
+  }
+
+  static Future<void> saveWidgetData(VFDWidgetData data) async {
     await _persistRecent(data);
+    final recent = await getRecentConfigs();
+    await _syncNativeWidget(recent);
     LoggingService.info(
       'Widget data saved: ${data.vendorName} - ${data.modelName}',
       tag: 'WIDGET',

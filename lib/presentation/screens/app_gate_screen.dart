@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
-import 'home_screen.dart';
+import 'main_shell_screen.dart';
 import 'welcome_screen.dart';
 
 /// Resolves saved session on cold start before routing to welcome or home.
@@ -27,7 +27,7 @@ class _AppGateScreenState extends State<AppGateScreen> {
     if (!mounted) return;
 
     final next = auth.isAuthenticated
-        ? const HomeScreen()
+        ? const MainShellScreen()
         : const WelcomeScreen();
 
     Navigator.of(context).pushReplacement(

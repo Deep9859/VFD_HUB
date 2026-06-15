@@ -7,6 +7,8 @@ import android.content.SharedPreferences
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import org.json.JSONArray
+import org.json.JSONObject
 
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "com.vfdapp.vfd_param_app/widget"
@@ -24,8 +26,23 @@ class MainActivity : FlutterActivity() {
                     editor.putString("modelName", call.argument("modelName") ?: "")
                     editor.putString("powerRating", call.argument("powerRating") ?: "")
                     editor.putString("configName", call.argument("configName") ?: "")
+
+                    val recent = call.argument<List<Map<String, Any?>>>("recentConfigs")
+                    if (recent != null) {
+                        val array = JSONArray()
+                        for (item in recent) {
+                            val obj = JSONObject()
+                            obj.put("vendorName", item["vendorName"] ?: "")
+                            obj.put("modelName", item["modelName"] ?: "")
+                            obj.put("powerRating", item["powerRating"] ?: "")
+                            obj.put("lastAccessed", item["lastAccessed"] ?: "")
+                            obj.put("configName", item["configName"] ?: "")
+                            array.put(obj)
+                        }
+                        editor.putString("recentConfigs", array.toString())
+                    }
                     editor.apply()
-                    // Trigger widget refresh
+
                     val manager = AppWidgetManager.getInstance(this)
                     val ids = manager.getAppWidgetIds(ComponentName(this, VFDWidgetProvider::class.java))
                     for (id in ids) VFDWidgetProvider.updateWidget(this, manager, id)
