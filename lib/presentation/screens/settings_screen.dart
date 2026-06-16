@@ -7,6 +7,7 @@ import '../../core/services/cloud_sync_service.dart';
 import '../../core/services/platform_settings_service.dart';
 import '../../core/services/remote_catalog_service.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_context.dart';
 import '../../data/models/audit_event.dart';
 import '../providers/enterprise_provider.dart';
 import '../../core/enterprise/app_permission.dart';
@@ -71,7 +72,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(result.message),
-        backgroundColor: result.ok ? Colors.green : Colors.red,
+        backgroundColor: result.ok ? context.successColor : context.errorColor,
       ),
     );
   }
@@ -98,10 +99,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.all(16),
         children: [
           _sectionTitle('Remote catalog'),
-          const Text(
+          Text(
             'Host a JSON catalog file (same schema as Excel import). '
             'Updates merge over built-in vendor data.',
-            style: TextStyle(fontSize: 12, color: Colors.grey),
+            style: context.captionStyle?.copyWith(color: context.onSurfaceMuted),
           ),
           const SizedBox(height: 8),
           TextField(
@@ -115,7 +116,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 4),
             Text(
               'Last cached: $_catalogUpdated',
-              style: const TextStyle(fontSize: 11, color: Colors.grey),
+              style: context.captionStyle?.copyWith(
+                fontSize: 11,
+                color: context.onSurfaceMuted,
+              ),
             ),
           ],
           const SizedBox(height: 8),
@@ -132,10 +136,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const Divider(height: 32),
           _sectionTitle('Cloud sync (optional)'),
-          const Text(
+          Text(
             'REST API: GET/POST /api/v1/backup, GET /api/v1/health. '
             'Bearer token optional.',
-            style: TextStyle(fontSize: 12, color: Colors.grey),
+            style: context.captionStyle?.copyWith(color: context.onSurfaceMuted),
           ),
           const SizedBox(height: 8),
           SwitchListTile(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../core/theme/theme_context.dart';
 import '../widgets/app_card.dart';
 import '../../data/models/vfd_manual.dart';
 
@@ -76,14 +77,14 @@ class _PdfViewerScreenState extends State<PdfViewerScreen>
     Clipboard.setData(ClipboardData(text: widget.manual.filePath));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Row(
+        content: Row(
           children: [
-            Icon(Icons.check_circle, color: Colors.white, size: 18),
-            SizedBox(width: 8),
-            Text('Link copied to clipboard'),
+            Icon(Icons.check_circle, color: context.onPrimaryBg, size: 18),
+            const SizedBox(width: 8),
+            const Text('Link copied to clipboard'),
           ],
         ),
-        backgroundColor: Colors.green.shade700,
+        backgroundColor: context.successColor,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         duration: const Duration(seconds: 2),
@@ -96,7 +97,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF121212) : Colors.grey.shade200,
+      backgroundColor: context.surfaceMuted,
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -110,7 +111,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen>
               widget.manual.manualType,
               style: TextStyle(
                 fontSize: 11,
-                color: Colors.white.withOpacity(0.7),
+                color: context.onPrimaryBg.withOpacity(0.7),
               ),
             ),
           ],
@@ -191,7 +192,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen>
           // Loading overlay
           if (!_isReady)
             Container(
-              color: isDark ? const Color(0xFF121212) : Colors.grey.shade200,
+              color: context.surfaceMuted,
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -199,11 +200,11 @@ class _PdfViewerScreenState extends State<PdfViewerScreen>
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                        color: context.surfaceCard,
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: context.onSurface.withOpacity(0.1),
                             blurRadius: 20,
                           ),
                         ],
@@ -217,8 +218,8 @@ class _PdfViewerScreenState extends State<PdfViewerScreen>
                           const SizedBox(height: 16),
                           Text(
                             'Loading PDF...',
-                            style: TextStyle(
-                              color: Colors.grey.shade600,
+                            style: context.bodyStyle?.copyWith(
+                              color: context.onSurfaceMuted,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -375,9 +376,9 @@ class _PdfViewerScreenState extends State<PdfViewerScreen>
           title: widget.manual.title,
           subtitle: widget.manual.manualType,
           accentColor: color,
-          backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-          titleColor: isDark ? Colors.white : Colors.grey.shade900,
-          subtitleColor: isDark ? Colors.white70 : Colors.grey.shade700,
+          backgroundColor: context.surfaceCard,
+          titleColor: context.onSurface,
+          subtitleColor: context.onSurfaceMuted,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -413,22 +414,21 @@ class _PdfViewerScreenState extends State<PdfViewerScreen>
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E1E1E) : Colors.grey.shade100,
+                  color: context.surfaceMuted,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
+                    color: context.borderColor,
                   ),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.link, size: 16, color: Colors.grey.shade500),
+                    Icon(Icons.link, size: 16, color: context.onSurfaceSubtle),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         widget.manual.filePath,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey.shade600,
+                        style: context.captionStyle?.copyWith(
+                          color: context.onSurfaceMuted,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -444,8 +444,6 @@ class _PdfViewerScreenState extends State<PdfViewerScreen>
                   icon: const Icon(Icons.open_in_browser),
                   label: const Text('Open in Browser'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: color,
-                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
@@ -495,33 +493,33 @@ class _PdfViewerScreenState extends State<PdfViewerScreen>
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.red.shade50,
+                color: context.errorBg,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.red.shade200, width: 2),
+                border: Border.all(color: context.tintedBorder(context.errorColor), width: 2),
               ),
-              child: Icon(icon, size: 56, color: Colors.red.shade400),
+              child: Icon(icon, size: 56, color: context.errorColor),
             ),
             const SizedBox(height: 20),
             Text(
               title,
-              style: TextStyle(
+              style: context.titleStyle?.copyWith(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.grey.shade800,
+                color: context.onSurface,
               ),
             ),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.red.shade50,
+                color: context.errorBg,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.red.shade200),
+                border: Border.all(color: context.tintedBorder(context.errorColor)),
               ),
               child: Text(
                 message,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.red.shade700, fontSize: 13, height: 1.5),
+                style: TextStyle(color: context.errorColor, fontSize: 13, height: 1.5),
               ),
             ),
             const SizedBox(height: 24),
@@ -529,8 +527,6 @@ class _PdfViewerScreenState extends State<PdfViewerScreen>
               icon: const Icon(Icons.arrow_back),
               label: const Text('Go Back'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red.shade700,
-                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),

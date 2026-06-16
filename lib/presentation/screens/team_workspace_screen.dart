@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/enterprise/app_permission.dart';
 import '../../core/services/team_sharing_service.dart';
 import '../../data/models/team_member.dart';
+import '../../core/theme/theme_context.dart';
 import '../providers/auth_provider.dart';
 import '../providers/enterprise_provider.dart';
 import '../providers/vfd_provider.dart';
@@ -86,7 +87,7 @@ class _TeamWorkspaceScreenState extends State<TeamWorkspaceScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(msg),
-        backgroundColor: error ? Colors.red : Colors.green,
+        backgroundColor: error ? context.errorColor : context.successColor,
       ),
     );
   }

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/enterprise/app_permission.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_context.dart';
 import '../providers/auth_provider.dart';
 import '../providers/locale_provider.dart';
 import '../providers/theme_provider.dart';
@@ -25,7 +26,6 @@ class AccountHubScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final enterprise = context.watch<EnterpriseProvider>();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       body: CustomScrollView(
@@ -232,13 +232,11 @@ class AccountHubScreen extends StatelessWidget {
                   title: 'VFD Hub Industrial',
                   subtitle: '21 vendors • Modbus • Enterprise RBAC',
                   accentColor: AppTheme.primary,
-                  backgroundColor:
-                      isDark ? const Color(0xFF1E1E2E) : Colors.white,
+                  backgroundColor: context.surfaceCard,
                   child: Text(
                     'Levels 1–4 enabled on this build.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark ? Colors.white60 : AppTheme.grey500,
+                    style: context.captionStyle?.copyWith(
+                      color: context.onSurfaceMuted,
                     ),
                   ),
                 ),
@@ -247,10 +245,10 @@ class AccountHubScreen extends StatelessWidget {
                   width: double.infinity,
                   child: OutlinedButton.icon(
                     onPressed: () => _signOut(context),
-                    icon: const Icon(Icons.logout, color: Colors.red),
-                    label: const Text(
+                    icon: Icon(Icons.logout, color: context.errorColor),
+                    label: Text(
                       'Sign out',
-                      style: TextStyle(color: Colors.red),
+                      style: TextStyle(color: context.errorColor),
                     ),
                   ),
                 ),

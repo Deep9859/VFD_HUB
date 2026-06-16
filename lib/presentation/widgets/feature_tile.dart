@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_context.dart';
 
 class FeatureTile extends StatelessWidget {
   final IconData icon;
@@ -21,7 +21,7 @@ class FeatureTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = context.cs;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -32,7 +32,7 @@ class FeatureTile extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E1E2E) : Colors.white,
+              color: cs.surface,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
                 color: color.withOpacity(0.25),
@@ -62,9 +62,10 @@ class FeatureTile extends StatelessWidget {
                   label,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: context.labelStyle?.copyWith(
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
+                    color: context.onSurface,
                   ),
                 ),
                 if (subtitle != null) ...[
@@ -73,9 +74,9 @@ class FeatureTile extends StatelessWidget {
                     subtitle!,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
+                    style: context.captionStyle?.copyWith(
                       fontSize: 11,
-                      color: isDark ? Colors.white54 : AppTheme.grey500,
+                      color: context.onSurfaceMuted,
                     ),
                   ),
                 ],

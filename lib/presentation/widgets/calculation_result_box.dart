@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_context.dart';
 
 /// Theme-aware panel for calculator output — readable in light and dark mode.
 class CalculationResultBox extends StatelessWidget {
@@ -19,12 +20,9 @@ class CalculationResultBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark
-        ? accentColor.withOpacity(0.2)
-        : accentColor.withOpacity(0.1);
-    final border = accentColor.withOpacity(isDark ? 0.55 : 0.4);
-    final fg = Theme.of(context).colorScheme.onSurface;
+    final bg = context.tintedBg(accentColor);
+    final border = context.tintedBorder(accentColor);
+    final fg = context.onSurface;
 
     return Container(
       width: double.infinity,

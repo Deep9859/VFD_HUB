@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_context.dart';
 import '../../data/models/vfd_fault.dart';
 import '../providers/vfd_provider.dart';
 import '../widgets/app_card.dart';
@@ -79,7 +80,7 @@ class _FaultLookupScreenState extends State<FaultLookupScreen>
       case 'high':     return Colors.orange.shade700;
       case 'medium':   return Colors.amber.shade700;
       case 'low':      return Colors.green.shade700;
-      default:         return Colors.grey.shade600;
+      default:         return context.onSurfaceMuted;
     }
   }
 
@@ -118,7 +119,7 @@ class _FaultLookupScreenState extends State<FaultLookupScreen>
             icon: Icons.search,
             title: l10n.faultCodeLookup,
             subtitle: l10n.searchByCodeOrDescription,
-            backgroundColor: isDark ? const Color(0xFF101424) : const Color(0xFFE8F4FF),
+            backgroundColor: context.infoBg,
             accentColor: AppTheme.primaryBlue,
             child: Column(
               children: [
@@ -127,7 +128,7 @@ class _FaultLookupScreenState extends State<FaultLookupScreen>
                     labelText: l10n.selectVendor,
                     prefixIcon: const Icon(Icons.business),
                   ),
-                  dropdownColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                  dropdownColor: context.surfaceCard,
                   value: _selectedVendorId,
                   items: vendors.map((v) {
                     return DropdownMenuItem(
@@ -139,7 +140,7 @@ class _FaultLookupScreenState extends State<FaultLookupScreen>
                           Text(v.name,
                               style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  color: isDark ? Colors.white : Colors.black87)),
+                                  color: context.onSurface)),
                         ],
                       ),
                     );
@@ -215,7 +216,7 @@ class _FaultLookupScreenState extends State<FaultLookupScreen>
                               Icon(
                                 _severityIcon(s),
                                 size: 14,
-                                color: isSelected ? Colors.white : color,
+                                color: isSelected ? context.onPrimaryBg : color,
                               ),
                               const SizedBox(width: 4),
                             ],
@@ -224,7 +225,7 @@ class _FaultLookupScreenState extends State<FaultLookupScreen>
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
-                                color: isSelected ? Colors.white : color,
+                                color: isSelected ? context.onPrimaryBg : color,
                               ),
                             ),
                           ],
@@ -260,7 +261,7 @@ class _FaultLookupScreenState extends State<FaultLookupScreen>
           children: [
             CircularProgressIndicator(color: Colors.red.shade700),
             const SizedBox(height: 16),
-            Text('Loading fault codes...', style: TextStyle(color: Colors.grey.shade600)),
+            Text('Loading fault codes...', style: context.bodyStyle?.copyWith(color: context.onSurfaceMuted)),
           ],
         ),
       );
@@ -269,7 +270,7 @@ class _FaultLookupScreenState extends State<FaultLookupScreen>
     if (_filteredFaultCodes.isEmpty) {
       return _buildEmptyState(
         icon: Icons.search_off,
-        color: Colors.grey.shade600,
+        color: context.onSurfaceMuted,
         title: _searchController.text.isNotEmpty ? l10n.noSearchResults : l10n.noFaultCodes,
         subtitle: _searchController.text.isNotEmpty
             ? 'Try different keywords or clear the search'
@@ -284,7 +285,7 @@ class _FaultLookupScreenState extends State<FaultLookupScreen>
           // Results count bar
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            color: isDark ? const Color(0xFF1E1E1E) : Colors.grey.shade50,
+            color: context.surfaceMuted,
             child: Row(
               children: [
                 Icon(Icons.list_alt, size: 16, color: Colors.red.shade700),
@@ -294,7 +295,7 @@ class _FaultLookupScreenState extends State<FaultLookupScreen>
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade700,
+                    color: context.onSurfaceMuted,
                   ),
                 ),
               ],
@@ -318,7 +319,7 @@ class _FaultLookupScreenState extends State<FaultLookupScreen>
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        color: context.surfaceCard,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: color.withOpacity(0.3), width: 2),
         boxShadow: [
@@ -393,7 +394,7 @@ class _FaultLookupScreenState extends State<FaultLookupScreen>
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 13,
-                color: isDark ? Colors.grey.shade300 : Colors.grey.shade800,
+                color: context.onSurfaceMuted,
                 height: 1.4,
               ),
             ),
@@ -405,12 +406,12 @@ class _FaultLookupScreenState extends State<FaultLookupScreen>
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Colors.green.shade50,
-                    Colors.green.shade100.withOpacity(0.3),
+                    context.successBg,
+                    context.successColor.withOpacity(0.15),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.green.shade300, width: 1.5),
+                border: Border.all(color: context.tintedBorder(context.successColor), width: 1.5),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -421,18 +422,18 @@ class _FaultLookupScreenState extends State<FaultLookupScreen>
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [Colors.green.shade600, Colors.green.shade700],
+                            colors: [context.successColor, context.successColor.withOpacity(0.85)],
                           ),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.build_circle, color: Colors.white, size: 16),
+                        child: Icon(Icons.build_circle, color: context.onPrimaryBg, size: 16),
                       ),
                       const SizedBox(width: 10),
                       Text(
                         '${l10n.solution}:',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Colors.green.shade800,
+                          color: context.successColor,
                           fontSize: 14,
                         ),
                       ),
@@ -442,7 +443,7 @@ class _FaultLookupScreenState extends State<FaultLookupScreen>
                   Text(
                     fault.solution,
                     style: TextStyle(
-                      color: Colors.green.shade900,
+                      color: context.onSurface,
                       fontSize: 13,
                       height: 1.5,
                     ),
@@ -482,14 +483,14 @@ class _FaultLookupScreenState extends State<FaultLookupScreen>
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey.shade700,
+                color: context.onSurfaceMuted,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               subtitle,
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+              style: context.captionStyle?.copyWith(color: context.onSurfaceSubtle),
               textAlign: TextAlign.center,
             ),
           ],

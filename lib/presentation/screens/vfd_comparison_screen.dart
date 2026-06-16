@@ -3,6 +3,7 @@ import '../../core/config/supported_vendors.dart';
 import '../../core/services/vfd_comparison_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/datasources/vfd_static_data.dart';
+import '../../core/theme/theme_context.dart';
 import '../../data/models/protocol_model.dart';
 import '../../data/models/vfd_parameter.dart';
 import '../widgets/app_card.dart';
@@ -179,7 +180,7 @@ class _VFDComparisonScreenState extends State<VFDComparisonScreen>
         scrollDirection: Axis.horizontal,
         child: DataTable(
           columnSpacing: 20,
-          headingRowColor: WidgetStateProperty.all(Colors.blue.shade50),
+          headingRowColor: WidgetStateProperty.all(context.infoBg),
           columns: [
             const DataColumn(
               label: Text('Feature', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -288,7 +289,7 @@ class _VFDComparisonScreenState extends State<VFDComparisonScreen>
                 ),
                 const SizedBox(height: 8),
                 if (protocols.isEmpty)
-                  Text('No protocols in DB', style: TextStyle(color: Colors.grey.shade600))
+                  Text('No protocols in DB', style: context.bodyStyle?.copyWith(color: context.onSurfaceMuted))
                 else
                   ...protocols.map(
                     (p) => ListTile(
@@ -324,10 +325,10 @@ class _VFDComparisonScreenState extends State<VFDComparisonScreen>
         padding: const EdgeInsets.symmetric(vertical: 24),
         child: Column(
           children: [
-            Icon(Icons.compare_arrows, size: 64, color: Colors.indigo.shade200),
+            Icon(Icons.compare_arrows, size: 64, color: context.infoColor.withOpacity(0.35)),
             const SizedBox(height: 16),
             Text('Select VFDs to compare',
-                style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
+                style: context.titleStyle?.copyWith(color: context.onSurfaceMuted)),
           ],
         ),
       ),

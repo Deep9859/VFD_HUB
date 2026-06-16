@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import '../../core/theme/theme_context.dart';
 import '../widgets/app_card.dart';
 import 'privacy_policy_screen.dart';
 
@@ -36,7 +37,6 @@ class _AboutScreenState extends State<AboutScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
       appBar: AppBar(
@@ -71,10 +71,10 @@ class _AboutScreenState extends State<AboutScreen> {
                   ),
                 ],
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.electrical_services,
                 size: 60,
-                color: Colors.white,
+                color: context.onPrimaryBg,
               ),
             ),
 
@@ -99,17 +99,17 @@ class _AboutScreenState extends State<AboutScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Colors.green.shade100,
-                    Colors.green.shade50,
+                    context.successBg,
+                    context.successColor.withOpacity(0.05),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.green.shade300, width: 1.5),
+                border: Border.all(color: context.tintedBorder(context.successColor), width: 1.5),
               ),
               child: Text(
                 l10n.versionLabel(_packageInfo.version, _packageInfo.buildNumber),
                 style: TextStyle(
-                  color: Colors.green.shade700,
+                  color: context.successColor,
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
                 ),
@@ -123,28 +123,28 @@ class _AboutScreenState extends State<AboutScreen> {
               title: l10n.appSubtitle,
               subtitle: l10n.appDescription,
               accentColor: Theme.of(context).primaryColor,
-              backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+              backgroundColor: context.surfaceCard,
               child: Column(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Colors.blue.shade600, Colors.blue.shade700],
+                        colors: [context.infoColor, context.infoColor.withOpacity(0.85)],
                       ),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.blue.shade600.withOpacity(0.3),
+                          color: context.infoColor.withOpacity(0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.description,
                       size: 32,
-                      color: Colors.white,
+                      color: context.onPrimaryBg,
                     ),
                   ),
                 ],
@@ -158,7 +158,7 @@ class _AboutScreenState extends State<AboutScreen> {
               title: l10n.keyFeatures,
               subtitle: 'What makes VFD Hub valuable',
               accentColor: Colors.orange.shade700,
-              backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+              backgroundColor: context.surfaceCard,
               child: Column(
                 children: [
                   const SizedBox(height: 8),
@@ -180,7 +180,7 @@ class _AboutScreenState extends State<AboutScreen> {
               title: l10n.howToUseTitle,
               subtitle: l10n.appGuideNote,
               accentColor: Colors.blue.shade700,
-              backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+              backgroundColor: context.surfaceCard,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -201,7 +201,7 @@ class _AboutScreenState extends State<AboutScreen> {
               title: l10n.developer,
               subtitle: l10n.developerName,
               accentColor: Colors.green.shade700,
-              backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+              backgroundColor: context.surfaceCard,
               child: Column(
                 children: [
                   const SizedBox(height: 8),
@@ -213,7 +213,7 @@ class _AboutScreenState extends State<AboutScreen> {
                       Text(
                         l10n.builtWithLove,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.grey.shade700,
+                              color: context.onSurfaceMuted,
                             ),
                         textAlign: TextAlign.center,
                       ),
@@ -230,14 +230,14 @@ class _AboutScreenState extends State<AboutScreen> {
               title: l10n.database,
               subtitle: l10n.databaseInfo,
               accentColor: Colors.purple.shade700,
-              backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+              backgroundColor: context.surfaceCard,
               child: Column(
                 children: [
                   const SizedBox(height: 8),
                   Text(
                     l10n.databaseStats,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey.shade600,
+                          color: context.onSurfaceMuted,
                         ),
                     textAlign: TextAlign.center,
                   ),
@@ -251,7 +251,7 @@ class _AboutScreenState extends State<AboutScreen> {
             Text(
               l10n.copyright,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey.shade500,
+                    color: context.onSurfaceMuted,
                   ),
             ),
 
@@ -280,9 +280,9 @@ class _AboutScreenState extends State<AboutScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.orange.shade50,
+        color: context.warningBg,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.orange.shade200),
+        border: Border.all(color: context.tintedBorder(context.warningColor)),
       ),
       child: Row(
         children: [
@@ -290,14 +290,14 @@ class _AboutScreenState extends State<AboutScreen> {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.orange.shade600, Colors.orange.shade700],
+                colors: [context.warningColor, context.warningColor.withOpacity(0.85)],
               ),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               icon,
               size: 18,
-              color: Colors.white,
+              color: context.onPrimaryBg,
             ),
           ),
           const SizedBox(width: 12),
@@ -306,14 +306,14 @@ class _AboutScreenState extends State<AboutScreen> {
               feature,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade800,
+                    color: context.onSurface,
                   ),
             ),
           ),
           Icon(
             Icons.check_circle,
             size: 20,
-            color: Colors.green.shade600,
+            color: context.successColor,
           ),
         ],
       ),
@@ -326,16 +326,15 @@ class _AboutScreenState extends State<AboutScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(top: 2),
-            child: Icon(Icons.arrow_right, size: 18, color: Colors.blueAccent),
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Icon(Icons.arrow_right, size: 18, color: context.infoColor),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               text,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey.shade800,
                     height: 1.4,
                   ),
             ),

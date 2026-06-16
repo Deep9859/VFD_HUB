@@ -4,6 +4,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import '../providers/vfd_provider.dart';
 import '../widgets/app_card.dart';
+import '../../core/theme/theme_context.dart';
 
 class QRScannerScreen extends StatefulWidget {
   const QRScannerScreen({super.key});
@@ -49,7 +50,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
         builder: (ctx) => AlertDialog(
           title: Row(
             children: [
-              Icon(Icons.check_circle, color: Colors.green.shade700),
+              Icon(Icons.check_circle, color: context.successColor),
               const SizedBox(width: 8),
               const Text('VFD Detected'),
             ],
@@ -90,7 +91,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
       messenger.showSnackBar(
         SnackBar(
           content: Text(result['error'] ?? 'Invalid QR Code'),
-          backgroundColor: Colors.red,
+          backgroundColor: context.errorColor,
         ),
       );
       setState(() => _isProcessing = false);
@@ -310,8 +311,6 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                 icon: const Icon(Icons.keyboard),
                 label: const Text('Enter Manually'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.blue.shade700,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
@@ -381,9 +380,9 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
 
               if (vendor.isEmpty || model.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Vendor and Model are required'),
-                    backgroundColor: Colors.red,
+                  SnackBar(
+                    content: const Text('Vendor and Model are required'),
+                    backgroundColor: context.errorColor,
                   ),
                 );
                 return;

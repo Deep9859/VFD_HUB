@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/security/input_validation_service.dart';
 import '../../core/theme/app_form_styles.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_context.dart';
 import '../providers/auth_provider.dart';
 import '../screens/main_shell_screen.dart';
 
@@ -35,7 +36,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF13131F) : AppTheme.grey50,
+      backgroundColor: context.cs.surface,
       appBar: AppBar(
         title: const Text('Create Account'),
         leading: IconButton(
@@ -59,8 +60,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('Already have an account? ',
-                        style: TextStyle(color: AppTheme.grey500, fontSize: 14)),
+                    Text('Already have an account? ',
+                        style: context.bodyStyle?.copyWith(color: context.onSurfaceMuted)),
                     TextButton(
                       onPressed: () => Navigator.pop(context),
                       style: TextButton.styleFrom(
@@ -100,7 +101,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         Text('Join VFD Hub', style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 4),
         Text('Create your account to get started',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.grey500)),
+            style: context.bodyStyle?.copyWith(color: context.onSurfaceMuted)),
       ],
     );
   }
@@ -109,9 +110,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E2E) : Colors.white,
+        color: context.surfaceCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? const Color(0xFF2A2A3E) : AppTheme.grey200),
+        border: Border.all(color: context.borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -218,8 +219,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
             builder: (_, auth, __) => ElevatedButton(
               onPressed: auth.isLoading ? null : _signUp,
               child: auth.isLoading
-                  ? const SizedBox(height: 20, width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  ? SizedBox(height: 20, width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: context.onPrimaryBg))
                   : const Text('Create Account'),
             ),
           ),

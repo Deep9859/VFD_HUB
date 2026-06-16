@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../core/theme/theme_context.dart';
 import '../../data/models/vfd_drawing.dart';
 
 class DrawingSection extends StatelessWidget {
@@ -28,14 +29,14 @@ class DrawingSection extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isDark
-              ? [const Color(0xFF1E1E1E), const Color(0xFF2A2A2A)]
-              : [Colors.white, Colors.orange.shade50.withOpacity(0.3)],
+              ? [context.cs.surface, context.cs.surfaceContainerHigh]
+              : [context.surfaceCard, context.warningBg.withOpacity(0.3)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? Colors.grey.shade800 : Colors.orange.shade200,
+          color: isDark ? context.borderColor : context.warningColor.withOpacity(0.35),
           width: 2,
         ),
         boxShadow: [
@@ -72,8 +73,8 @@ class DrawingSection extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.architecture,
-                        color: Colors.white, size: 22),
+                    child: Icon(Icons.architecture,
+                        color: context.onPrimaryBg, size: 22),
                   ),
                   const SizedBox(width: 12),
                   Column(
@@ -90,7 +91,7 @@ class DrawingSection extends StatelessWidget {
                         '${drawings.length} file${drawings.length != 1 ? 's' : ''}',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey.shade600,
+                          color: context.onSurfaceMuted,
                         ),
                       ),
                     ],
@@ -136,10 +137,10 @@ class DrawingSection extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                color: isDark ? Colors.grey.shade900 : Colors.grey.shade50,
+                color: context.emptyStateBg,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+                  color: context.borderColor,
                   width: 2,
                 ),
               ),
@@ -161,7 +162,7 @@ class DrawingSection extends StatelessWidget {
                   Text(
                     l10n.noDrawings,
                     style: TextStyle(
-                      color: Colors.grey.shade700,
+                      color: context.onSurfaceMuted,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -169,7 +170,7 @@ class DrawingSection extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     'Upload panel wiring diagram to see related parameters',
-                    style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                    style: context.bodyStyle?.copyWith(color: context.onSurfaceSubtle, fontSize: 13),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -185,16 +186,15 @@ class DrawingSection extends StatelessWidget {
                 return Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.grey.shade900 : Colors.white,
+                    color: context.surfaceCard,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color:
-                          isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+                      color: context.borderColor,
                       width: 1.5,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: context.onSurface.withOpacity(0.05),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -237,12 +237,12 @@ class DrawingSection extends StatelessWidget {
                       child: Row(
                         children: [
                           Icon(Icons.access_time,
-                              size: 12, color: Colors.grey.shade500),
+                              size: 12, color: context.onSurfaceSubtle),
                           const SizedBox(width: 4),
                           Text(
                             _formatDate(drawing.uploadedAt),
                             style: TextStyle(
-                                fontSize: 11, color: Colors.grey.shade600),
+                                fontSize: 11, color: context.onSurfaceMuted),
                           ),
                         ],
                       ),
@@ -252,12 +252,12 @@ class DrawingSection extends StatelessWidget {
                       children: [
                         Container(
                           decoration: BoxDecoration(
-                            color: Colors.blue.shade50,
+                            color: context.infoBg,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: IconButton(
                             icon: Icon(Icons.visibility,
-                                color: Colors.blue.shade700, size: 20),
+                                color: context.infoColor, size: 20),
                             tooltip: 'View',
                             onPressed: () => onOpen(drawing),
                           ),
@@ -265,7 +265,7 @@ class DrawingSection extends StatelessWidget {
                         const SizedBox(width: 8),
                         Container(
                           decoration: BoxDecoration(
-                            color: Colors.red.shade50,
+                            color: context.errorBg,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: IconButton(
@@ -362,12 +362,12 @@ class DrawingSection extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: context.errorColor),
             onPressed: () {
               Navigator.pop(ctx);
               onDelete(drawing);
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+            child: Text('Delete', style: TextStyle(color: context.onPrimaryBg)),
           ),
         ],
       ),

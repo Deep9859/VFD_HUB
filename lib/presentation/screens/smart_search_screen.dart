@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/config/supported_vendors.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_context.dart';
 import '../../core/utils/search_utils.dart';
 import '../../data/datasources/vfd_static_data.dart';
 import '../../data/models/vfd_search_hit.dart';
@@ -143,7 +144,7 @@ class _SmartSearchScreenState extends State<SmartSearchScreen> {
   Widget _buildResultCard(VfdSearchHit hit) {
     final model = hit.model;
     final statusPrimary =
-        model.status == 'Current' ? Colors.green : Colors.orange;
+        model.status == 'Current' ? context.successColor : context.warningColor;
     return InkWell(
       onTap: () => Navigator.pop(context, hit),
       borderRadius: BorderRadius.circular(16),
@@ -158,11 +159,11 @@ class _SmartSearchScreenState extends State<SmartSearchScreen> {
             CircleAvatar(
               radius: 24,
               backgroundColor:
-                  model.status == 'Current' ? Colors.green : Colors.orange,
+                  model.status == 'Current' ? context.successColor : context.warningColor,
               child: Text(
                 model.name[0],
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: context.onPrimaryBg,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -182,7 +183,10 @@ class _SmartSearchScreenState extends State<SmartSearchScreen> {
                   const SizedBox(height: 4),
                   Text(
                     model.app,
-                    style: const TextStyle(fontSize: 13, color: Colors.grey),
+                    style: context.bodyStyle?.copyWith(
+                      fontSize: 13,
+                      color: context.onSurfaceMuted,
+                    ),
                   ),
                 ],
               ),
@@ -190,8 +194,8 @@ class _SmartSearchScreenState extends State<SmartSearchScreen> {
             Chip(
               label: Text(model.status, style: const TextStyle(fontSize: 11)),
               backgroundColor: model.status == 'Current'
-                  ? Colors.green.shade100
-                  : Colors.orange.shade100,
+                  ? context.successBg
+                  : context.warningBg,
             ),
             const SizedBox(width: 12),
             const Icon(Icons.arrow_forward_ios, size: 18),
@@ -206,16 +210,16 @@ class _SmartSearchScreenState extends State<SmartSearchScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.search_off, size: 64, color: Colors.grey.shade400),
+          Icon(Icons.search_off, size: 64, color: context.onSurfaceSubtle),
           const SizedBox(height: 16),
           Text(
             'No results found',
-            style: TextStyle(color: Colors.grey.shade600),
+            style: context.bodyStyle?.copyWith(color: context.onSurfaceMuted),
           ),
           const SizedBox(height: 8),
           Text(
             'Try fewer filters or a shorter search term',
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+            style: context.captionStyle?.copyWith(color: context.onSurfaceSubtle),
           ),
         ],
       ),

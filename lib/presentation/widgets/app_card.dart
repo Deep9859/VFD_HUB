@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_context.dart';
 
 class AppCard extends StatelessWidget {
   final Widget child;
@@ -45,14 +46,14 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final color = accentColor ?? AppTheme.primary;
-    final bgColor = backgroundColor ??
-        (isDark ? const Color(0xFF1E1E2E) : Colors.white);
-    final borderColor = isDark ? const Color(0xFF2A2A3E) : AppTheme.grey200;
+    final isDark = context.isDarkMode;
+    final cs = context.cs;
+    final color = accentColor ?? cs.primary;
+    final bgColor = backgroundColor ?? cs.surface;
     final highlight = isCompletedStep
         ? AppTheme.success
-        : (isActiveStep ? AppTheme.primary : null);
+        : (isActiveStep ? cs.primary : null);
+    final borderColor = highlight ?? cs.outline;
 
     return Container(
       width: double.infinity,
@@ -122,8 +123,7 @@ class AppCard extends StatelessWidget {
                         Text(
                           subtitle!,
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: subtitleColor ??
-                                (isDark ? Colors.white38 : AppTheme.grey500),
+                            color: subtitleColor ?? context.onSurfaceMuted,
                           ),
                         ),
                       ],
@@ -157,8 +157,10 @@ class _StepBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bg = done
-        ? AppTheme.success
-        : (active ? AppTheme.primary : AppTheme.grey400);
+        ? context.successColor
+        : (active ? context.cs.primary : context.surfaceMuted);
+    final fg =
+        done || active ? context.onPrimaryBg : context.onSurfaceMuted;
 
     return Container(
       width: 36,
@@ -169,11 +171,11 @@ class _StepBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: done
-          ? const Icon(Icons.check, color: Colors.white, size: 18)
+          ? Icon(Icons.check, color: fg, size: 18)
           : Text(
               total != null ? '$number/$total' : '$number',
               style: TextStyle(
-                color: Colors.white,
+                color: fg,
                 fontWeight: FontWeight.bold,
                 fontSize: total != null ? 11 : 14,
               ),

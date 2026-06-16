@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter/services.dart';
+import '../../core/theme/theme_context.dart';
 import '../widgets/app_card.dart';
 
 class QRGeneratorScreen extends StatefulWidget {
@@ -36,9 +37,9 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
 
     if (vendor.isEmpty || model.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vendor and Model are required'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: const Text('Vendor and Model are required'),
+          backgroundColor: context.errorColor,
         ),
       );
       return;
@@ -78,10 +79,10 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
 
     Clipboard.setData(ClipboardData(text: _generatedCode));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('QR Code data copied to clipboard'),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 2),
+      SnackBar(
+        content: const Text('QR Code data copied to clipboard'),
+        backgroundColor: context.successColor,
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -107,12 +108,12 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
               icon: Icons.info,
               title: 'QR Code Generator',
               subtitle: 'Generate scannable VFD nameplate QR codes',
-              accentColor: Colors.blue.shade700,
-              backgroundColor: Colors.blue.shade50,
+              accentColor: context.infoColor,
+              backgroundColor: context.infoBg,
               child: Text(
                 'Scan the QR below with VFD Hub or print it on a nameplate label.',
-                style: TextStyle(
-                  color: Colors.blue.shade900,
+                style: context.bodyStyle?.copyWith(
+                  color: context.onSurface,
                   fontSize: 13,
                 ),
               ),
@@ -206,8 +207,6 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
                 icon: const Icon(Icons.qr_code),
                 label: const Text('Generate QR Code'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue.shade700,
-                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: _generateQRCode,
@@ -222,12 +221,12 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: context.surfaceCard,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade300),
+                    border: Border.all(color: context.borderColor),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.06),
+                        color: context.onSurface.withOpacity(0.06),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -237,7 +236,7 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
                     data: _generatedCode,
                     version: QrVersions.auto,
                     size: 220,
-                    backgroundColor: Colors.white,
+                    backgroundColor: context.surfaceCard,
                     errorCorrectionLevel: QrErrorCorrectLevel.M,
                   ),
                 ),
@@ -262,9 +261,9 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
+                  color: context.surfaceMuted,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.shade300),
+                  border: Border.all(color: context.borderColor),
                 ),
                 child: SelectableText(
                   _generatedCode,
@@ -278,16 +277,16 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.green.shade50,
+                  color: context.successBg,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.green.shade200),
+                  border: Border.all(color: context.tintedBorder(context.successColor)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.check_circle, color: Colors.green.shade700),
+                        Icon(Icons.check_circle, color: context.successColor),
                         const SizedBox(width: 8),
                         const Text(
                           'Ready to use',
@@ -300,9 +299,8 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
                       '1. Scan with VFD Hub QR scanner\n'
                       '2. Or print this screen / take a screenshot for the nameplate\n'
                       '3. Share encoded data via clipboard if needed',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.green.shade900,
+                      style: context.captionStyle?.copyWith(
+                        color: context.onSurface,
                       ),
                     ),
                   ],
@@ -319,11 +317,11 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.info, color: Colors.blue),
-            SizedBox(width: 8),
-            Text('QR Code Formats'),
+            Icon(Icons.info, color: context.infoColor),
+            const SizedBox(width: 8),
+            const Text('QR Code Formats'),
           ],
         ),
         content: SingleChildScrollView(
@@ -372,13 +370,13 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
         const SizedBox(height: 4),
         Text(
           'Format: $format',
-          style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+          style: context.captionStyle?.copyWith(color: context.onSurfaceMuted),
         ),
         const SizedBox(height: 4),
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.grey.shade100,
+            color: context.surfaceMuted,
             borderRadius: BorderRadius.circular(4),
           ),
           child: Text(

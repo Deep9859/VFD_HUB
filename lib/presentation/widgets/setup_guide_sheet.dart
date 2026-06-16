@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_context.dart';
 
 /// Bottom sheet: 5-step setup guide (same copy as About screen).
 class SetupGuideSheet extends StatelessWidget {
@@ -46,7 +47,7 @@ class SetupGuideSheet extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppTheme.grey300,
+                color: context.borderColor,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -81,7 +82,7 @@ class SetupGuideSheet extends StatelessWidget {
                         l10n.appGuideNote,
                         style: GoogleFonts.inter(
                           fontSize: 12,
-                            color: AppTheme.grey500,
+                            color: context.onSurfaceMuted,
                           height: 1.35,
                         ),
                       ),
@@ -135,8 +136,8 @@ class _GuideStepRow extends StatelessWidget {
           backgroundColor: AppTheme.primary,
           child: Text(
             '$number',
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: context.onPrimaryBg,
               fontSize: 12,
               fontWeight: FontWeight.bold,
             ),

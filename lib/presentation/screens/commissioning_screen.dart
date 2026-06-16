@@ -7,6 +7,7 @@ import '../../data/models/audit_event.dart';
 import '../../data/models/vfd_parameter.dart';
 import '../providers/vfd_provider.dart';
 import '../widgets/app_card.dart';
+import '../../core/theme/theme_context.dart';
 
 class CommissioningScreen extends StatefulWidget {
   const CommissioningScreen({super.key});
@@ -204,15 +205,13 @@ class _CommissioningScreenState extends State<CommissioningScreen> {
                   : const Icon(Icons.download),
               label: Text(_reading ? 'Reading...' : 'Read mapped parameters'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal.shade700,
-                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
             ),
           ),
           if (_status != null) ...[
             const SizedBox(height: 8),
-            Text(_status!, style: TextStyle(color: Colors.grey.shade600)),
+            Text(_status!, style: context.bodyStyle?.copyWith(color: context.onSurfaceMuted)),
           ],
           const SizedBox(height: 16),
           if (_results.isNotEmpty)
@@ -237,7 +236,7 @@ class _CommissioningScreenState extends State<CommissioningScreen> {
                         'Config: $configured',
                         style: TextStyle(
                           fontSize: 11,
-                          color: match ? Colors.green : Colors.orange,
+                          color: match ? context.successColor : context.warningColor,
                         ),
                       ),
                     ],
@@ -249,7 +248,7 @@ class _CommissioningScreenState extends State<CommissioningScreen> {
           Text(
             'Safety: read-only mode. Ensure network access to the drive is authorized. '
             'Register mapping is inferred from parameter codes - verify against the manual.',
-            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+            style: context.captionStyle?.copyWith(color: context.onSurfaceMuted),
           ),
         ],
       ),

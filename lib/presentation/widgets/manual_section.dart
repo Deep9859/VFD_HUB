@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/theme_context.dart';
 import '../../data/models/vfd_manual.dart';
 
 class ManualSection extends StatelessWidget {
@@ -28,7 +29,7 @@ class ManualSection extends StatelessWidget {
     }
   }
 
-  Color _getManualColor(String manualType) {
+  Color _getManualColor(String manualType, BuildContext context) {
     switch (manualType.toLowerCase()) {
       case 'user manual':
         return Colors.blue;
@@ -41,7 +42,7 @@ class ManualSection extends StatelessWidget {
       case 'troubleshooting':
         return Colors.red;
       default:
-        return Colors.grey;
+        return context.onSurfaceMuted;
     }
   }
 
@@ -56,7 +57,7 @@ class ManualSection extends StatelessWidget {
   }
 
   Widget _buildManualCard(BuildContext context, VfdManual manual, bool isDark) {
-    final color = _getManualColor(manual.manualType);
+    final color = _getManualColor(manual.manualType, context);
 
     return InkWell(
       onTap: () => onManualTap?.call(manual),
@@ -64,7 +65,7 @@ class ManualSection extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: isDark ? Colors.grey.shade900 : Colors.white,
+          color: context.surfaceCard,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: color.withOpacity(0.3),
@@ -151,7 +152,7 @@ class ManualSection extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
+                            color: context.surfaceMuted,
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Row(
@@ -160,14 +161,13 @@ class ManualSection extends StatelessWidget {
                               Icon(
                                 Icons.info_outline,
                                 size: 12,
-                                color: Colors.grey.shade600,
+                                color: context.onSurfaceMuted,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 'v${manual.version}',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.grey.shade700,
+                                style: context.captionStyle?.copyWith(
+                                  color: context.onSurfaceMuted,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -188,12 +188,12 @@ class ManualSection extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Colors.green.shade100,
-                      Colors.green.shade50,
+                      context.successBg,
+                      context.successColor.withOpacity(0.05),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.green.shade300, width: 1.5),
+                  border: Border.all(color: context.tintedBorder(context.successColor), width: 1.5),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -201,14 +201,14 @@ class ManualSection extends StatelessWidget {
                     Icon(
                       Icons.check_circle,
                       size: 16,
-                      color: Colors.green.shade700,
+                      color: context.successColor,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       'Available',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.green.shade700,
+                        color: context.successColor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

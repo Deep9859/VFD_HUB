@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/security/input_validation_service.dart';
 import '../../core/theme/app_form_styles.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_context.dart';
 import '../../data/models/vfd_parameter.dart';
 
 class ParameterEditor extends StatefulWidget {
@@ -112,9 +114,9 @@ class _ParameterEditorState extends State<ParameterEditor> {
                     ),
                   ],
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.tune,
-                  color: Colors.white,
+                  color: context.onPrimaryBg,
                   size: 24,
                 ),
               ),
@@ -135,7 +137,7 @@ class _ParameterEditorState extends State<ParameterEditor> {
                     Text(
                       '${_filteredParameters.values.fold(0, (sum, params) => sum + params.length)} parameters available',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey.shade600,
+                            color: context.onSurfaceMuted,
                           ),
                     ),
                     if (widget.readOnly)
@@ -146,7 +148,7 @@ class _ParameterEditorState extends State<ParameterEditor> {
                             'View only — viewer role',
                             style: TextStyle(fontSize: 11),
                           ),
-                          backgroundColor: Colors.orange.shade100,
+                          backgroundColor: context.warningBg,
                           visualDensity: VisualDensity.compact,
                         ),
                       ),
@@ -165,7 +167,7 @@ class _ParameterEditorState extends State<ParameterEditor> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
+                color: context.onSurface.withOpacity(0.1),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -173,49 +175,19 @@ class _ParameterEditorState extends State<ParameterEditor> {
           ),
           child: TextField(
             controller: _searchController,
-            style: const TextStyle(fontSize: 16),
-            decoration: InputDecoration(
+            style: AppFormStyles.fieldText(context),
+            decoration: AppFormStyles.decoration(
+              context,
               hintText: 'Search parameters by code or name...',
-              hintStyle: TextStyle(color: Colors.grey.shade500),
-              filled: true,
-              fillColor: Theme.of(context).cardColor,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide(
-                  color: Theme.of(context).primaryColor.withOpacity(0.2),
-                  width: 1,
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide(
-                  color: Theme.of(context).primaryColor,
-                  width: 2,
-                ),
-              ),
-              prefixIcon: Icon(
-                Icons.search,
-                color: Theme.of(context).primaryColor,
-              ),
+              prefixIcon: Icon(Icons.search, color: context.cs.primary),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
-                      icon: Icon(
-                        Icons.clear,
-                        color: Theme.of(context).primaryColor,
-                      ),
+                      icon: Icon(Icons.clear, color: context.cs.primary),
                       onPressed: () {
                         _searchController.clear();
                       },
                     )
                   : null,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 16,
-              ),
             ),
           ),
         ),
@@ -227,33 +199,28 @@ class _ParameterEditorState extends State<ParameterEditor> {
           Container(
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
+              color: context.surfaceCard,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: Colors.grey.shade200,
-                width: 1,
-              ),
+              border: Border.all(color: context.borderColor),
             ),
             child: Column(
               children: [
                 Icon(
                   Icons.search_off,
                   size: 48,
-                  color: Colors.grey.shade400,
+                  color: context.onSurfaceSubtle,
                 ),
                 const SizedBox(height: 16),
                 Text(
                   'No parameters match your search',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.grey.shade600,
-                      ),
+                  style: context.titleStyle?.copyWith(color: context.onSurfaceMuted),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Try different keywords or clear the search',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey.shade500,
+                        color: context.onSurfaceSubtle,
                       ),
                   textAlign: TextAlign.center,
                 ),
@@ -317,7 +284,7 @@ class _ParameterEditorState extends State<ParameterEditor> {
                 ),
                 child: Icon(
                   _getGroupIcon(groupName),
-                  color: Colors.white,
+                  color: context.onPrimaryBg,
                   size: 20,
                 ),
               ),
@@ -337,7 +304,7 @@ class _ParameterEditorState extends State<ParameterEditor> {
                     Text(
                       '${params.length} parameter${params.length != 1 ? 's' : ''}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.grey.shade600,
+                            color: context.onSurfaceMuted,
                           ),
                     ),
                   ],
@@ -401,18 +368,19 @@ class _ParameterEditorState extends State<ParameterEditor> {
     final hasUserValue = param.userValue != null && param.userValue!.isNotEmpty;
     final isModified = hasUserValue && param.userValue != param.defaultValue;
 
+    final cs = context.cs;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isModified ? Colors.orange.shade200 : Colors.grey.shade200,
+          color: isModified ? AppTheme.warning.withOpacity(0.6) : cs.outline,
           width: isModified ? 2 : 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: cs.shadow.withOpacity(context.isDarkMode ? 0.25 : 0.08),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -459,13 +427,13 @@ class _ParameterEditorState extends State<ParameterEditor> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Colors.orange.shade100,
-                          Colors.orange.shade50,
+                          context.warningBg,
+                          context.warningColor.withOpacity(0.05),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: Colors.orange.shade200,
+                        color: context.tintedBorder(context.warningColor),
                       ),
                     ),
                     child: Row(
@@ -474,14 +442,14 @@ class _ParameterEditorState extends State<ParameterEditor> {
                         Icon(
                           Icons.edit,
                           size: 14,
-                          color: Colors.orange.shade700,
+                          color: context.warningColor,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           'Modified',
                           style: TextStyle(
                             fontSize: 11,
-                            color: Colors.orange.shade700,
+                            color: context.warningColor,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -508,7 +476,7 @@ class _ParameterEditorState extends State<ParameterEditor> {
               Text(
                 param.description,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey.shade600,
+                      color: context.onSurfaceMuted,
                       height: 1.4,
                     ),
               ),
@@ -525,7 +493,7 @@ class _ParameterEditorState extends State<ParameterEditor> {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
+                          color: context.onSurface.withOpacity(0.1),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         ),
@@ -583,23 +551,23 @@ class _ParameterEditorState extends State<ParameterEditor> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        Colors.green.shade500,
-                        Colors.green.shade600,
+                        context.successColor,
+                        context.successColor.withOpacity(0.85),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.green.shade500.withOpacity(0.3),
+                        color: context.successColor.withOpacity(0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
                     ],
                   ),
                   child: IconButton(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.check_circle,
-                      color: Colors.white,
+                      color: context.onPrimaryBg,
                       size: 24,
                     ),
                     tooltip: 'Save Parameter',
@@ -609,7 +577,7 @@ class _ParameterEditorState extends State<ParameterEditor> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: const Text('Please enter a value'),
-                            backgroundColor: Colors.red.shade600,
+                            backgroundColor: context.errorColor,
                             duration: const Duration(seconds: 2),
                           ),
                         );
@@ -626,7 +594,7 @@ class _ParameterEditorState extends State<ParameterEditor> {
                             content: Text(
                               'Value must be between ${param.minValue} and ${param.maxValue}',
                             ),
-                            backgroundColor: Colors.red.shade600,
+                            backgroundColor: context.errorColor,
                             duration: const Duration(seconds: 3),
                           ),
                         );
@@ -640,8 +608,8 @@ class _ParameterEditorState extends State<ParameterEditor> {
                         SnackBar(
                           content: Row(
                             children: [
-                              const Icon(Icons.check_circle,
-                                  color: Colors.white),
+                              Icon(Icons.check_circle,
+                                  color: context.onPrimaryBg),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
@@ -652,7 +620,7 @@ class _ParameterEditorState extends State<ParameterEditor> {
                               ),
                             ],
                           ),
-                          backgroundColor: Colors.green.shade600,
+                          backgroundColor: context.successColor,
                           duration: const Duration(seconds: 2),
                           behavior: SnackBarBehavior.floating,
                           shape: RoundedRectangleBorder(
@@ -675,16 +643,16 @@ class _ParameterEditorState extends State<ParameterEditor> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
+                  color: context.surfaceMuted,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.shade200),
+                  border: Border.all(color: context.borderColor),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.info_outline,
                       size: 16,
-                      color: Colors.grey.shade600,
+                      color: context.onSurfaceMuted,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -697,7 +665,7 @@ class _ParameterEditorState extends State<ParameterEditor> {
                               'Range: ${param.minValue.isEmpty ? 'N/A' : param.minValue} - ${param.maxValue.isEmpty ? 'N/A' : param.maxValue}',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey.shade700,
+                                color: context.onSurfaceMuted,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -706,7 +674,7 @@ class _ParameterEditorState extends State<ParameterEditor> {
                               'Default: ${param.defaultValue}',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey.shade600,
+                                color: context.onSurfaceMuted,
                               ),
                             ),
                         ],

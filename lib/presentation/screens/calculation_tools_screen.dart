@@ -3,6 +3,7 @@ import 'dart:math';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/app_form_styles.dart';
 import '../../core/services/unit_conversion_service.dart';
+import '../../core/theme/theme_context.dart';
 import '../widgets/app_card.dart';
 import '../widgets/calculation_result_box.dart';
 
@@ -1469,7 +1470,7 @@ class _PressureCalculatorState extends State<PressureCalculator> {
             const SizedBox(height: 24),
             CalculationResultBox(
               text: _result,
-              accentColor: AppTheme.grey500,
+              accentColor: context.onSurfaceMuted,
             ),
           ],
         ],

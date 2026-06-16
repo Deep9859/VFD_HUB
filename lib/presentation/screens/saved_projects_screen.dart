@@ -5,6 +5,7 @@ import '../../core/config/configuration_flow.dart';
 import '../../core/services/backup_service.dart';
 import '../../core/services/saved_project_service.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_context.dart';
 import '../../data/models/saved_project.dart';
 import '../providers/vfd_provider.dart';
 import '../widgets/app_card.dart';
@@ -109,7 +110,7 @@ class _SavedProjectsScreenState extends State<SavedProjectsScreen> {
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text('Delete', style: TextStyle(color: context.errorColor)),
           ),
         ],
       ),
@@ -139,7 +140,7 @@ class _SavedProjectsScreenState extends State<SavedProjectsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? Colors.red : Colors.green,
+        backgroundColor: isError ? context.errorColor : context.successColor,
       ),
     );
   }
@@ -238,7 +239,10 @@ class _SavedProjectsScreenState extends State<SavedProjectsScreen> {
             children: [
               Text(
                 'Use "Save Current" after configuring a drive, or restore a full backup from the menu.',
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                style: context.bodyStyle?.copyWith(
+                  color: context.onSurfaceMuted,
+                  fontSize: 13,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -271,11 +275,11 @@ class _SavedProjectsScreenState extends State<SavedProjectsScreen> {
             if (value == 'load') _loadProject(project);
             if (value == 'delete') _deleteProject(project);
           },
-          itemBuilder: (ctx) => const [
-            PopupMenuItem(value: 'load', child: Text('Load project')),
+          itemBuilder: (ctx) => [
+            const PopupMenuItem(value: 'load', child: Text('Load project')),
             PopupMenuItem(
               value: 'delete',
-              child: Text('Delete', style: TextStyle(color: Colors.red)),
+              child: Text('Delete', style: TextStyle(color: context.errorColor)),
             ),
           ],
         ),

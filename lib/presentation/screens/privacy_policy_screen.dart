@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/theme_context.dart';
+
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
 
@@ -12,13 +14,19 @@ class PrivacyPolicyScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Privacy Policy')),
       body: ListView(
         padding: const EdgeInsets.all(20),
-        children: const [
+        children: [
           Text(
             'VFD Hub Privacy Policy',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: context.titleStyle?.copyWith(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          SizedBox(height: 8),
-          Text('Version $policyVersion • Effective $effectiveDate'),
+          const SizedBox(height: 8),
+          Text(
+            'Version $policyVersion • Effective $effectiveDate',
+            style: context.bodyStyle?.copyWith(color: context.onSurfaceMuted),
+          ),
           SizedBox(height: 24),
           _Section(
             title: 'Overview',
@@ -90,10 +98,12 @@ class _Section extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title,
-              style:
-                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+              style: context.titleStyle?.copyWith(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              )),
           const SizedBox(height: 8),
-          Text(body, style: const TextStyle(height: 1.5)),
+          Text(body, style: context.bodyStyle?.copyWith(height: 1.5)),
         ],
       ),
     );

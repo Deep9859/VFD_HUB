@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_context.dart';
 
 /// Progress bar + step chips for the VFD setup wizard on home.
 class ConfigurationProgressHeader extends StatelessWidget {
@@ -20,7 +21,7 @@ class ConfigurationProgressHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final progress = totalSteps == 0 ? 0.0 : completedSteps / totalSteps;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = context.cs;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,7 +34,7 @@ class ConfigurationProgressHeader extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white70 : AppTheme.grey500,
+                  color: context.onSurfaceMuted,
                 ),
               ),
             ),
@@ -42,7 +43,7 @@ class ConfigurationProgressHeader extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: AppTheme.primary,
+                color: cs.primary,
               ),
             ),
           ],
@@ -53,8 +54,8 @@ class ConfigurationProgressHeader extends StatelessWidget {
           child: LinearProgressIndicator(
             value: progress.clamp(0.0, 1.0),
             minHeight: 8,
-            backgroundColor: isDark ? const Color(0xFF2A2A3E) : AppTheme.grey200,
-            valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.accent),
+            backgroundColor: cs.surfaceContainerHighest,
+            valueColor: AlwaysStoppedAnimation<Color>(AppTheme.accent),
           ),
         ),
         const SizedBox(height: 14),
@@ -116,7 +117,7 @@ class _StepChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = context.cs;
     Color bg;
     Color fg;
     Color border;
@@ -126,13 +127,13 @@ class _StepChip extends StatelessWidget {
       fg = AppTheme.success;
       border = AppTheme.success.withOpacity(0.35);
     } else if (active) {
-      bg = AppTheme.primary.withOpacity(0.12);
-      fg = AppTheme.primary;
-      border = AppTheme.primary;
+      bg = cs.primary.withOpacity(0.12);
+      fg = cs.primary;
+      border = cs.primary;
     } else {
-      bg = isDark ? const Color(0xFF252535) : AppTheme.grey100;
-      fg = isDark ? Colors.white54 : AppTheme.grey500;
-      border = isDark ? const Color(0xFF3A3A4E) : AppTheme.grey300;
+      bg = cs.surfaceContainerHighest;
+      fg = context.onSurfaceMuted;
+      border = cs.outline;
     }
 
     return Container(
@@ -149,15 +150,15 @@ class _StepChip extends StatelessWidget {
             radius: 10,
             backgroundColor: done
                 ? AppTheme.success
-                : (active ? AppTheme.primary : AppTheme.grey400),
+                : (active ? cs.primary : cs.outline),
             child: done
-                ? const Icon(Icons.check, size: 12, color: Colors.white)
+                ? Icon(Icons.check, size: 12, color: cs.onPrimary)
                 : Text(
                     '$step',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: cs.onPrimary,
                     ),
                   ),
           ),
@@ -211,7 +212,7 @@ class StepGuideBanner extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 12,
                 height: 1.4,
-                color: isDark ? Colors.white70 : AppTheme.grey700,
+                color: context.onSurfaceMuted,
               ),
             ),
           ),

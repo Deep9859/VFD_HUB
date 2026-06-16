@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/config/configuration_flow.dart';
 import '../../core/config/supported_vendors.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_context.dart';
 import 'vfd_comparison_screen.dart';
 import '../../data/models/vendor_model.dart';
 import '../../data/models/protocol_model.dart';
@@ -545,7 +546,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Text(kw,
             style: TextStyle(
                 fontSize: 15, color: color, fontWeight: FontWeight.bold)),
-        Text(hp, style: TextStyle(fontSize: 10, color: Colors.grey.shade600)),
+        Text(hp, style: TextStyle(fontSize: 10, color: color.withOpacity(0.75))),
       ],
     );
   }
@@ -555,26 +556,27 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildConnectionTypeCard(BuildContext context, VfdProvider provider) {
     final l10n = AppLocalizations.of(context)!;
     final isComm = provider.connectionType == ConnectionType.communication;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = context.cs;
 
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: isDark
-              ? [const Color(0xFF1E1E1E), const Color(0xFF2A2A2A)]
-              : [Colors.white, Colors.grey.shade50],
+          colors: [
+            cs.surface,
+            cs.surfaceContainerHighest,
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+          color: cs.outline,
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: cs.shadow.withOpacity(context.isDarkMode ? 0.3 : 0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -628,6 +630,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Expanded(
                   child: _connectionOption(
+                    context: context,
                     icon: Icons.cable,
                     label: l10n.communication,
                     sublabel: l10n.communicationSub,
@@ -641,6 +644,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: _connectionOption(
+                    context: context,
                     icon: Icons.settings_input_svideo,
                     label: l10n.hardWire,
                     sublabel: l10n.hardWireSub,
@@ -661,6 +665,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _connectionOption({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required String sublabel,
@@ -668,6 +673,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required Color color,
     required VoidCallback onTap,
   }) {
+    final cs = context.cs;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -685,10 +691,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   end: Alignment.bottomRight,
                 )
               : null,
-          color: selected ? null : Colors.grey.shade50,
+          color: selected ? null : cs.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: selected ? color : Colors.grey.shade300,
+            color: selected ? color : cs.outline,
             width: selected ? 2.5 : 1.5,
           ),
           boxShadow: selected
@@ -707,13 +713,14 @@ class _HomeScreenState extends State<HomeScreen> {
               duration: const Duration(milliseconds: 300),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color:
-                    selected ? color.withOpacity(0.15) : Colors.grey.shade100,
+                color: selected
+                    ? color.withOpacity(0.15)
+                    : cs.surfaceContainerHighest,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
-                color: selected ? color : Colors.grey.shade600,
+                color: selected ? color : context.onSurfaceMuted,
                 size: 28,
               ),
             ),
@@ -722,7 +729,7 @@ class _HomeScreenState extends State<HomeScreen> {
               label,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: selected ? color : Colors.grey.shade700,
+                color: selected ? color : context.onSurface,
                 fontSize: 14,
                 letterSpacing: 0.3,
               ),
@@ -733,7 +740,7 @@ class _HomeScreenState extends State<HomeScreen> {
               sublabel,
               style: TextStyle(
                 fontSize: 11,
-                color: selected ? color.withOpacity(0.8) : Colors.grey.shade500,
+                color: selected ? color.withOpacity(0.8) : context.onSurfaceMuted,
               ),
               textAlign: TextAlign.center,
               maxLines: 2,
@@ -779,14 +786,14 @@ class _HomeScreenState extends State<HomeScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isDark
-              ? [const Color(0xFF1E1E1E), const Color(0xFF2A2A2A)]
-              : [Colors.white, Colors.purple.shade50.withOpacity(0.3)],
+              ? [context.cs.surface, context.cs.surfaceContainerHigh]
+              : [context.surfaceCard, Colors.purple.shade50.withOpacity(0.3)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? Colors.grey.shade800 : Colors.purple.shade200,
+          color: isDark ? context.borderColor : Colors.purple.shade200,
           width: 2,
         ),
         boxShadow: [
@@ -852,13 +859,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: _protocolColor(p.type).withOpacity(0.15),
+                              color: _protocolColor(context, p.type).withOpacity(0.15),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Icon(
                               _protocolIcon(p.type),
                               size: 16,
-                              color: _protocolColor(p.type),
+                              color: _protocolColor(context, p.type),
                             ),
                           ),
                           const SizedBox(width: 10),
@@ -874,7 +881,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Text(p.type,
                                     style: TextStyle(
                                         fontSize: 11,
-                                        color: _protocolColor(p.type))),
+                                        color: _protocolColor(context, p.type))),
                               ],
                             ),
                           ),
@@ -885,7 +892,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 : Center(
                     child: Text(
                       l10n.noProtocols,
-                      style: TextStyle(color: Colors.purple.shade400),
+                      style: context.bodyStyle?.copyWith(color: context.onSurfaceMuted),
                     ),
                   ),
           ),
@@ -894,7 +901,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Color _protocolColor(String type) {
+  Color _protocolColor(BuildContext context, String type) {
     switch (type) {
       case 'Ethernet':
         return Colors.blue.shade700;
@@ -903,7 +910,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 'Direct':
         return Colors.teal.shade700;
       default:
-        return Colors.grey.shade700;
+        return context.onSurfaceMuted;
     }
   }
 
@@ -929,9 +936,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.indigo.shade50,
+        color: context.infoBg,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.indigo.shade200),
+        border: Border.all(color: context.tintedBorder(context.infoColor)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -939,20 +946,20 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.indigo.shade100,
+              color: context.infoColor.withOpacity(0.15),
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(12)),
             ),
             child: Row(
               children: [
                 Icon(Icons.developer_board,
-                    color: Colors.indigo.shade700, size: 18),
+                    color: context.infoColor, size: 18),
                 const SizedBox(width: 8),
                 Text(
                   l10n.step2SelectCommCard,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Colors.indigo.shade800,
+                    color: context.onSurface,
                     fontSize: 14,
                   ),
                 ),
@@ -984,7 +991,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ? Icons.check_circle_outline
                               : Icons.memory,
                           size: 18,
-                          color: Colors.indigo.shade700,
+                          color: context.infoColor,
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -1002,22 +1009,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.amber.shade50,
+                      color: context.warningBg,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.amber.shade300),
+                      border: Border.all(color: context.tintedBorder(context.warningColor)),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(Icons.tips_and_updates,
-                            size: 16, color: Colors.amber.shade800),
+                            size: 16, color: context.warningColor),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             l10n.installCardTip(
                                 provider.selectedCommCard ?? ''),
                             style: TextStyle(
-                                fontSize: 11, color: Colors.amber.shade900),
+                                fontSize: 11, color: context.onSurface),
                           ),
                         ),
                       ],
@@ -1029,12 +1036,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   Row(
                     children: [
                       Icon(Icons.info_outline,
-                          size: 14, color: Colors.indigo.shade400),
+                          size: 14, color: context.infoColor.withOpacity(0.7)),
                       const SizedBox(width: 6),
                       Text(
                         l10n.protocolTypeInfo(protocol.name, protocol.type),
                         style: TextStyle(
-                            fontSize: 11, color: Colors.indigo.shade600),
+                            fontSize: 11, color: context.onSurfaceMuted),
                       ),
                     ],
                   ),
@@ -1062,7 +1069,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Text(
             l10n.vfdParamsCount(
                 provider.parameters.length, provider.parametersByGroup.length),
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+            style: context.captionStyle?.copyWith(color: context.onSurfaceMuted),
           ),
           const SizedBox(height: 12),
           ParameterEditor(
@@ -1075,6 +1082,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 24),
         ] else ...[
           _emptyCard(
+            context,
             icon: Icons.tune,
             message: l10n.noParametersFound,
             sub: l10n.noParametersSub,
@@ -1087,17 +1095,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildExactParamsBanner(BuildContext context, VfdProvider provider) {
     final l10n = AppLocalizations.of(context)!;
+    final cs = context.cs;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.blue.shade50,
+        color: cs.primary.withOpacity(context.isDarkMode ? 0.15 : 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue.shade200),
+        border: Border.all(color: cs.primary.withOpacity(0.35)),
       ),
       child: Row(
         children: [
-          Icon(Icons.info_outline, color: Colors.blue.shade700, size: 24),
+          Icon(Icons.info_outline, color: cs.primary, size: 24),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -1105,16 +1114,16 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Text(
                   l10n.exactParamsTitle,
-                  style: TextStyle(
+                  style: context.labelStyle?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Colors.blue.shade800,
+                    color: cs.primary,
                     fontSize: 14,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   l10n.exactParamsSub,
-                  style: TextStyle(color: Colors.blue.shade700, fontSize: 12),
+                  style: context.captionStyle?.copyWith(color: cs.primary),
                 ),
               ],
             ),
@@ -1122,8 +1131,6 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(width: 8),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue.shade600,
-              foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               textStyle: const TextStyle(fontSize: 12),
             ),
@@ -1186,7 +1193,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 4),
                 Text(
                   l10n.motorSpecsSub,
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  style: context.captionStyle?.copyWith(color: context.onSurfaceMuted),
                 ),
                 const SizedBox(height: 16),
                 if (NameplateOcrService.isSupported)
@@ -1231,10 +1238,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Expanded(
                         child: _wizardField(
-                            controllers['kwCtrl']!, l10n.motorPower, '7.5')),
+                            context, controllers['kwCtrl']!, l10n.motorPower, '7.5')),
                     const SizedBox(width: 12),
                     Expanded(
-                        child: _wizardField(controllers['voltCtrl']!,
+                        child: _wizardField(context, controllers['voltCtrl']!,
                             l10n.ratedVoltage, '415')),
                   ],
                 ),
@@ -1242,12 +1249,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   children: [
                     Expanded(
-                        child: _wizardField(controllers['ampCtrl']!,
+                        child: _wizardField(context, controllers['ampCtrl']!,
                             l10n.ratedCurrent, '15.2')),
                     const SizedBox(width: 12),
                     Expanded(
                         child: _wizardField(
-                            controllers['rpmCtrl']!, l10n.ratedSpeed, '1450')),
+                            context, controllers['rpmCtrl']!, l10n.ratedSpeed, '1450')),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -1255,7 +1262,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Expanded(
                         child: _wizardField(
-                            controllers['hzCtrl']!, l10n.baseFrequency, '50')),
+                            context, controllers['hzCtrl']!, l10n.baseFrequency, '50')),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -1264,12 +1271,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           Text(l10n.connection,
                               style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.grey.shade700,
+                                  color: context.onSurfaceMuted,
                                   fontWeight: FontWeight.w500)),
                           const SizedBox(height: 4),
                           Container(
                             decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey.shade300),
+                              border: Border.all(color: context.borderColor),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -1301,8 +1308,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     icon: const Icon(Icons.auto_fix_high),
                     label: Text(l10n.autoFillParameters),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange.shade700,
-                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10)),
@@ -1333,7 +1338,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(l10n.motorSpecsApplied),
-                          backgroundColor: Colors.green,
+                          backgroundColor: context.successColor,
                           duration: const Duration(seconds: 2),
                         ),
                       );
@@ -1361,14 +1366,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _wizardField(TextEditingController ctrl, String label, String hint) {
+  Widget _wizardField(BuildContext context, TextEditingController ctrl, String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label,
-            style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade700,
+            style: context.labelStyle?.copyWith(
+                color: context.onSurfaceMuted,
                 fontWeight: FontWeight.w500)),
         const SizedBox(height: 4),
         TextField(
@@ -1376,7 +1380,7 @@ class _HomeScreenState extends State<HomeScreen> {
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(fontSize: 12, color: Colors.grey.shade400),
+            hintStyle: context.captionStyle?.copyWith(color: context.onSurfaceSubtle),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -1441,7 +1445,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 l10n.activeStepHint,
                 style: GoogleFonts.inter(
                   fontSize: 11,
-                  color: AppTheme.grey500,
+                  color: context.onSurfaceMuted,
                   fontStyle: FontStyle.italic,
                 ),
               ),
@@ -1879,6 +1883,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       provider.openManualFile(context, manual),
                 )
               : _emptyCard(
+                  context,
                   icon: Icons.library_books,
                   message: AppLocalizations.of(context)!.noManuals,
                   sub: AppLocalizations.of(context)!.noManualsSub,
@@ -1901,10 +1906,8 @@ class _HomeScreenState extends State<HomeScreen> {
             label: Text(AppLocalizations.of(context)!.faultCodeLookup),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-              backgroundColor: AppTheme.primaryBlue,
-              foregroundColor: Colors.white,
               elevation: 4,
-              shadowColor: AppTheme.primaryBlue.withOpacity(0.3),
+              shadowColor: context.cs.primary.withOpacity(0.3),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -1916,24 +1919,30 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _emptyCard(
-      {required IconData icon, required String message, required String sub}) {
+    BuildContext context, {
+    required IconData icon,
+    required String message,
+    required String sub,
+  }) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: context.emptyStateBg,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: context.borderColor),
       ),
       child: Column(
         children: [
-          Icon(icon, size: 48, color: Colors.grey.shade400),
+          Icon(icon, size: 48, color: context.onSurfaceSubtle),
           const SizedBox(height: 8),
-          Text(message, style: TextStyle(color: Colors.grey.shade600)),
+          Text(message, style: context.bodyStyle?.copyWith(color: context.onSurfaceMuted)),
           const SizedBox(height: 4),
-          Text(sub,
-              style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
-              textAlign: TextAlign.center),
+          Text(
+            sub,
+            style: context.captionStyle?.copyWith(color: context.onSurfaceSubtle),
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );
@@ -2002,7 +2011,7 @@ class _HomeScreenState extends State<HomeScreen> {
         messenger.showSnackBar(
           SnackBar(
             content: Text('Vendor "$vendorName" not found'),
-            backgroundColor: Colors.orange,
+            backgroundColor: context.warningColor,
           ),
         );
       }
@@ -2016,7 +2025,7 @@ class _HomeScreenState extends State<HomeScreen> {
         messenger.showSnackBar(
           SnackBar(
             content: Text('Model "$modelName" not found for $vendorName'),
-            backgroundColor: Colors.orange,
+            backgroundColor: context.warningColor,
           ),
         );
       }
@@ -2033,7 +2042,7 @@ class _HomeScreenState extends State<HomeScreen> {
       messenger.showSnackBar(
         SnackBar(
           content: Text('Loaded: $vendorName $modelName'),
-          backgroundColor: Colors.green,
+          backgroundColor: context.successColor,
           duration: const Duration(seconds: 3),
         ),
       );
@@ -2048,9 +2057,9 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!await PermissionsService.ensureCamera()) {
       if (!mounted) return;
       messenger.showSnackBar(
-        const SnackBar(
-          content: Text('Camera permission is required to scan QR codes'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: const Text('Camera permission is required to scan QR codes'),
+          backgroundColor: context.errorColor,
         ),
       );
       return;

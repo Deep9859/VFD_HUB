@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../core/theme/app_form_styles.dart';
+import '../../core/theme/theme_context.dart';
 import '../../data/services/manual_manager_service.dart';
 import '../widgets/app_card.dart';
 
@@ -94,9 +95,9 @@ class _ManualImportScreenState extends State<ManualImportScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Manual successfully imported!'),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: const Text('✅ Manual successfully imported!'),
+            backgroundColor: context.successColor,
           ),
         );
       }
@@ -164,7 +165,7 @@ class _ManualImportScreenState extends State<ManualImportScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('✅ $successCount imported, $failCount failed'),
-              backgroundColor: successCount > 0 ? Colors.green : Colors.orange,
+              backgroundColor: successCount > 0 ? context.successColor : context.warningColor,
             ),
           );
         }
@@ -180,7 +181,7 @@ class _ManualImportScreenState extends State<ManualImportScreen> {
   void _showError(String message) {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message), backgroundColor: Colors.red),
+        SnackBar(content: Text(message), backgroundColor: context.errorColor),
       );
     }
   }
@@ -279,17 +280,18 @@ class _ManualImportScreenState extends State<ManualImportScreen> {
               child: ElevatedButton.icon(
                 onPressed: _isImporting ? null : _importManual,
                 icon: _isImporting 
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: context.onPrimaryBg,
+                      ),
                     )
                   : const Icon(Icons.upload),
                 label: Text(_isImporting ? 'Importing...' : 'Import Manual'),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Colors.green.shade600,
-                  foregroundColor: Colors.white,
                 ),
               ),
             ),
@@ -306,7 +308,7 @@ class _ManualImportScreenState extends State<ManualImportScreen> {
             const SizedBox(height: 8),
             Text(
               'File naming format: VendorName_ModelName_ManualType.pdf\nExample: ABB_ACS580_User_Manual.pdf',
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+              style: context.captionStyle?.copyWith(color: context.onSurfaceMuted),
             ),
             const SizedBox(height: 16),
 
@@ -328,16 +330,16 @@ class _ManualImportScreenState extends State<ManualImportScreen> {
               icon: Icons.info_outline,
               title: 'Instructions',
               subtitle: 'Follow these steps to import manuals cleanly',
-              backgroundColor: Colors.amber.shade50,
-              accentColor: Colors.amber.shade800,
-              titleColor: Colors.black87,
-              subtitleColor: Colors.black54,
+              backgroundColor: context.warningBg,
+              accentColor: context.warningColor,
+              titleColor: context.onSurface,
+              subtitleColor: context.onSurfaceMuted,
               child: Text(
                 '1. PDF files app ke documents folder mein store hongi\n'
                 '2. Manuals vendor aur model ke according organize hongi\n'
                 '3. App mein manual section se directly access kar sakte hain\n'
                 '4. Bulk import ke liye proper file naming follow karein',
-                style: TextStyle(fontSize: 12, color: Colors.amber.shade900),
+                style: context.captionStyle?.copyWith(color: context.warningColor),
               ),
             ),
           ],
@@ -368,18 +370,18 @@ class _ManualImportScreenState extends State<ManualImportScreen> {
       children: [
         Row(
           children: [
-            Icon(icon, size: 16, color: Colors.blue.shade600),
+            Icon(icon, size: 16, color: context.infoColor),
             const SizedBox(width: 4),
-            Text(label, style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
+            Text(label, style: context.captionStyle?.copyWith(color: context.onSurfaceMuted)),
           ],
         ),
         const SizedBox(height: 4),
         Text(
           value,
-          style: TextStyle(
+          style: context.titleStyle?.copyWith(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Colors.blue.shade800,
+            color: context.infoColor,
           ),
         ),
       ],

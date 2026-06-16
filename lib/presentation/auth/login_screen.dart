@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/security/input_validation_service.dart';
 import '../../core/theme/app_form_styles.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_context.dart';
 import '../providers/auth_provider.dart';
 import 'signup_screen.dart';
 import '../screens/main_shell_screen.dart';
@@ -29,9 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF13131F) : AppTheme.grey50,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -43,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 56),
                 _buildHeader(),
                 const SizedBox(height: 40),
-                _buildCard(isDark),
+                _buildCard(context),
                 const SizedBox(height: 24),
                 _buildSignUpRow(),
                 const SizedBox(height: 24),
@@ -73,19 +72,22 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 6),
         Text(
           'Sign in to VFD Parameter Hub',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.grey500),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: context.onSurfaceMuted,
+              ),
         ),
       ],
     );
   }
 
-  Widget _buildCard(bool isDark) {
+  Widget _buildCard(BuildContext context) {
+    final cs = context.cs;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E2E) : Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? const Color(0xFF2A2A3E) : AppTheme.grey200),
+        border: Border.all(color: cs.outline),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -155,20 +157,32 @@ class _LoginScreenState extends State<LoginScreen> {
             builder: (_, auth, __) => ElevatedButton(
               onPressed: auth.isLoading ? null : _signIn,
               child: auth.isLoading
-                  ? const SizedBox(height: 20, width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  ? SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: context.cs.onPrimary,
+                      ),
+                    )
                   : const Text('Sign In'),
             ),
           ),
           const SizedBox(height: 12),
-          const Row(
+          Row(
             children: [
-              Expanded(child: Divider()),
+              const Expanded(child: Divider()),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12),
-                child: Text('or', style: TextStyle(color: AppTheme.grey400, fontSize: 13)),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Text(
+                  'or',
+                  style: context.captionStyle?.copyWith(
+                    color: context.onSurfaceSubtle,
+                    fontSize: 13,
+                  ),
+                ),
               ),
-              Expanded(child: Divider()),
+              const Expanded(child: Divider()),
             ],
           ),
           const SizedBox(height: 12),
@@ -195,8 +209,10 @@ class _LoginScreenState extends State<LoginScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text("Don't have an account? ",
-            style: TextStyle(color: AppTheme.grey500, fontSize: 14)),
+        Text(
+          "Don't have an account? ",
+          style: context.bodyStyle?.copyWith(color: context.onSurfaceMuted),
+        ),
         TextButton(
           onPressed: () => Navigator.push(context,
               MaterialPageRoute(builder: (_) => const SignUpScreen())),

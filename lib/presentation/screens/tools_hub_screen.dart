@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/enterprise/app_permission.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_context.dart';
 import '../providers/enterprise_provider.dart';
 import '../providers/vfd_provider.dart';
 import '../widgets/app_card.dart';
@@ -204,9 +205,9 @@ class ToolsHubScreen extends StatelessWidget {
     final provider = context.read<VfdProvider>();
     if (provider.selectedVendor == null || provider.selectedModelName == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Select vendor and model on Configure tab first'),
-          backgroundColor: Colors.orange,
+        SnackBar(
+          content: const Text('Select vendor and model on Configure tab first'),
+          backgroundColor: context.warningColor,
         ),
       );
       return;
@@ -214,9 +215,9 @@ class ToolsHubScreen extends StatelessWidget {
     final ok = await provider.shareConfigurationExport();
     if (context.mounted && ok) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Configuration ready to share'),
-          backgroundColor: Colors.green,
+        SnackBar(
+          content: const Text('Configuration ready to share'),
+          backgroundColor: context.successColor,
         ),
       );
     }

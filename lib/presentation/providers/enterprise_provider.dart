@@ -7,6 +7,7 @@ import '../../data/models/audit_event.dart';
 import '../../core/services/custom_vendor_service.dart';
 import '../../core/services/enterprise_profile_service.dart';
 import '../../core/services/enterprise_sso_service.dart';
+import '../../core/theme/theme_context.dart';
 
 class EnterpriseProvider extends ChangeNotifier {
   EnterpriseProfile? _profile;
@@ -90,7 +91,7 @@ class EnterpriseProvider extends ChangeNotifier {
           'Permission denied: ${permission.name} requires '
           '${role != null ? EnterprisePermissions.label(role!) : "higher"} role',
         ),
-        backgroundColor: Colors.orange,
+        backgroundColor: context.warningColor,
       ),
     );
   }

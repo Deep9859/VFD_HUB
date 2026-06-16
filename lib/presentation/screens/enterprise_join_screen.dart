@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/enterprise/app_permission.dart';
 import '../../core/services/enterprise_sso_service.dart';
+import '../../core/theme/theme_context.dart';
 import '../providers/enterprise_provider.dart';
 import '../widgets/app_card.dart';
 import '../../core/theme/app_theme.dart';
@@ -43,7 +44,7 @@ class _EnterpriseJoinScreenState extends State<EnterpriseJoinScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(result.message),
-        backgroundColor: result.ok ? Colors.green : Colors.red,
+        backgroundColor: result.ok ? context.successColor : context.errorColor,
       ),
     );
     if (result.ok) Navigator.pop(context, true);
@@ -58,7 +59,7 @@ class _EnterpriseJoinScreenState extends State<EnterpriseJoinScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(result.message),
-        backgroundColor: result.ok ? Colors.green : Colors.red,
+        backgroundColor: result.ok ? context.successColor : context.errorColor,
       ),
     );
     if (result.ok) Navigator.pop(context, true);
