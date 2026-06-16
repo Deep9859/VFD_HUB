@@ -48,6 +48,10 @@ app.*.map.json
 # Local scripts
 tmp_print_lines.py
 
+# Emulator / UI debug artifacts
+ui_dump*.xml
+test_screenshot_*.png
+
 # Excel import intermediates (regenerate via tools/import_excel_master.py)
 tools/excel_master_parsed.json
 tools/excel_*_preview.txt

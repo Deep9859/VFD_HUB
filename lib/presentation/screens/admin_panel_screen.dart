@@ -153,6 +153,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'admin-panel-fab',
         onPressed: _tabs.index == 0 ? _addVendor : _addMember,
         child: const Icon(Icons.add),
       ),

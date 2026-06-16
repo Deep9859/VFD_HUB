@@ -194,6 +194,7 @@ class _SavedProjectsScreenState extends State<SavedProjectsScreen> {
           ],
         ),
         floatingActionButton: FloatingActionButton.extended(
+          heroTag: 'saved-projects-fab',
           onPressed: _saveCurrent,
           icon: const Icon(Icons.save),
           label: const Text('Save Current'),
@@ -218,6 +219,7 @@ class _SavedProjectsScreenState extends State<SavedProjectsScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'saved-projects-fab-standalone',
         onPressed: _saveCurrent,
         icon: const Icon(Icons.save),
         label: const Text('Save Current'),

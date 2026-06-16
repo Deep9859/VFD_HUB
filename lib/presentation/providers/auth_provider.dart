@@ -244,6 +244,6 @@ class AuthProvider with ChangeNotifier {
     }
 
     _isLoading = false;
-    notifyListeners();
+    if (hasListeners) notifyListeners();
   }
 }

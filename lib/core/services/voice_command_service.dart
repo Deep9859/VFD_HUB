@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'permissions_service.dart';
 
@@ -9,11 +10,22 @@ class VoiceCommandService {
 
   final SpeechToText _speech = SpeechToText();
   bool _isInitialized = false;
+  bool _initAttempted = false;
   bool _isListening = false;
 
   Future<void> initialize() async {
-    if (_isInitialized) return;
-    _isInitialized = await _speech.initialize();
+    if (_initAttempted) return;
+    _initAttempted = true;
+    try {
+      _isInitialized = await _speech.initialize(
+        onError: (_) {},
+        onStatus: (_) {},
+      );
+    } on PlatformException {
+      _isInitialized = false;
+    } on Object {
+      _isInitialized = false;
+    }
   }
 
   Future<bool> startListening(Function(String) onResult) async {
@@ -101,7 +113,13 @@ class VoiceCommand {
 
 class VoiceCommandButton extends StatefulWidget {
   final Function(VoiceCommand?) onCommand;
-  const VoiceCommandButton({super.key, required this.onCommand});
+  final Object? heroTag;
+
+  const VoiceCommandButton({
+    super.key,
+    required this.onCommand,
+    this.heroTag = 'voice-command-fab',
+  });
 
   @override
   State<VoiceCommandButton> createState() => _VoiceCommandButtonState();
@@ -111,6 +129,7 @@ class _VoiceCommandButtonState extends State<VoiceCommandButton>
     with SingleTickerProviderStateMixin {
   final _voiceService = VoiceCommandService();
   late AnimationController _animController;
+  bool _ready = false;
 
   @override
   void initState() {
@@ -119,7 +138,12 @@ class _VoiceCommandButtonState extends State<VoiceCommandButton>
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     );
-    _voiceService.initialize();
+    _initVoice();
+  }
+
+  Future<void> _initVoice() async {
+    await _voiceService.initialize();
+    if (mounted) setState(() => _ready = true);
   }
 
   @override
@@ -156,7 +180,12 @@ class _VoiceCommandButtonState extends State<VoiceCommandButton>
 
   @override
   Widget build(BuildContext context) {
+    if (!_ready || !_voiceService.isAvailable) {
+      return const SizedBox.shrink();
+    }
+
     return FloatingActionButton(
+      heroTag: widget.heroTag,
       onPressed: _toggleListening,
       backgroundColor: _voiceService.isListening ? Colors.red : Colors.blue,
       child: _voiceService.isListening

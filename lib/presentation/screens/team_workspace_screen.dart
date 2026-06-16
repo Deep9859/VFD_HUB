@@ -109,6 +109,7 @@ class _TeamWorkspaceScreenState extends State<TeamWorkspaceScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'team-workspace-fab',
         onPressed: _shareCurrent,
         icon: const Icon(Icons.share),
         label: const Text('Share current'),
