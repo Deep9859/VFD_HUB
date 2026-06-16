@@ -59,7 +59,13 @@ iOS folder (`ios/`) is optional — remove if you ship Android only.
 ## Tests
 
 ```bash
-flutter test
+# Fast (parallel, no animation settle wait)
+flutter test --concurrency=4
+# or on Windows:
+test_fast.bat
+```
+
+```bash
 flutter analyze
 ```
 

@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:vfd_param_app/core/exceptions/vfd_exceptions.dart' as vfd_ex;
 import 'package:vfd_param_app/data/database/database_helper.dart';
 import 'package:vfd_param_app/data/models/vendor_model.dart';
@@ -7,18 +6,12 @@ import 'package:vfd_param_app/data/models/vfd_model.dart';
 import 'package:vfd_param_app/data/models/vfd_parameter.dart';
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize sqflite for testing
-  sqfliteFfiInit();
-  databaseFactory = databaseFactoryFfi;
-
   group('DatabaseHelper Tests', () {
     late DatabaseHelper dbHelper;
 
     setUpAll(() async {
-      // Initialize database for tests
       dbHelper = DatabaseHelper.instance;
+      await dbHelper.database;
     });
 
     group('getAllVendors', () {

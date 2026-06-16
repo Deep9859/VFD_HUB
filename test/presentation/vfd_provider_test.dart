@@ -1,13 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:vfd_param_app/data/database/database_helper.dart';
 import 'package:vfd_param_app/presentation/providers/vfd_provider.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
   late VfdProvider provider;
 
-  setUpAll(() {
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
+  setUpAll(() async {
+    await DatabaseHelper.instance.database;
   });
 
   setUp(() {

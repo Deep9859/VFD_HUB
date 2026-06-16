@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:vfd_param_app/data/models/vfd_manual.dart';
 import 'package:vfd_param_app/presentation/providers/vfd_provider.dart';
 import 'package:vfd_param_app/presentation/screens/fault_lookup_screen.dart';
@@ -29,11 +28,6 @@ Widget _wrap(Widget child) {
 }
 
 void main() {
-  setUpAll(() {
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
-  });
-
   // ── FaultLookupScreen ─────────────────────────────────────────────
   group('FaultLookupScreen', () {
     testWidgets('renders scaffold with appbar', (tester) async {
