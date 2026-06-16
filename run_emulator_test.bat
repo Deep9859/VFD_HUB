@@ -16,7 +16,7 @@ if errorlevel 1 (
   timeout /t 15 /nobreak >nul
 )
 
-for /f %%d in ('powershell -NoProfile -Command "$o = flutter devices 2>$null | Out-String; if ($o -match ''(emulator-\d+)'') { $matches[1] }"') do set "DEVICE=%%d"
+for /f %%d in ('powershell -NoProfile -Command "(flutter devices --machine | ConvertFrom-Json | Where-Object { $_.emulator } | Select-Object -First 1 -ExpandProperty id)"') do set "DEVICE=%%d"
 if "%DEVICE%"=="" (
   echo No Android emulator found.
   exit /b 1
