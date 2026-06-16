@@ -167,7 +167,7 @@ class VfdProvider with ChangeNotifier {
       developer.log('Unexpected error: $e', name: 'VfdProvider');
     }
     _isLoading = false;
-    notifyListeners();
+    if (hasListeners) notifyListeners();
   }
 
   void _loadStaticVendors() {
