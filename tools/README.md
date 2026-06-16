@@ -37,8 +37,9 @@ python tools/import_excel_master.py "D:\path\to\your.xlsx"
 
 ## Generated files
 
-- `tools/excel_master_parsed.json`
 - `lib/data/datasources/vfd_master_from_excel.dart`
 - `lib/data/datasources/vendor_models_from_excel.dart`
+
+Optional intermediate (gitignored): `tools/excel_master_parsed.json`
 
 Do not edit generated Dart files by hand.

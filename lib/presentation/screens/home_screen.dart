@@ -10,33 +10,19 @@ import 'vfd_comparison_screen.dart';
 import '../../data/models/vendor_model.dart';
 import '../../data/models/protocol_model.dart';
 import '../providers/vfd_provider.dart';
-import '../providers/auth_provider.dart';
 import '../providers/enterprise_provider.dart';
 import '../../core/enterprise/app_permission.dart';
-import 'enterprise_join_screen.dart';
-import 'admin_panel_screen.dart';
-import 'team_workspace_screen.dart';
-import '../providers/locale_provider.dart';
-import '../providers/theme_provider.dart';
 import '../widgets/parameter_editor.dart';
 import '../widgets/drawing_section.dart';
 import '../widgets/manual_section.dart';
 import '../widgets/vendor_avatar.dart';
 import 'fault_lookup_screen.dart';
-import 'about_screen.dart';
 import 'manual_import_screen.dart';
 import 'qr_scanner_screen.dart';
-import 'qr_generator_screen.dart';
 import 'smart_search_screen.dart';
 import '../../data/models/vfd_search_hit.dart';
 import '../../core/services/permissions_service.dart';
-import '../../core/services/widget_service.dart';
 import 'calculation_tools_screen.dart';
-import 'unit_converter_screen.dart';
-import 'saved_projects_screen.dart';
-import 'settings_screen.dart';
-import 'commissioning_screen.dart';
-import 'welcome_screen.dart';
 import '../widgets/app_card.dart';
 import '../widgets/configuration_progress.dart';
 import '../widgets/setup_guide_sheet.dart';
@@ -1979,232 +1965,6 @@ class _HomeScreenState extends State<HomeScreen> {
       value: value,
       items: items.map(itemBuilder).toList(),
       onChanged: onChanged,
-    );
-  }
-
-  // ── Dialogs ───────────────────────────────────────────────────────
-
-  void _showLogoutDialog(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.signOut),
-        content: Text(l10n.signOutConfirm),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx), child: Text(l10n.cancel)),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await context.read<AuthProvider>().signOut();
-              if (!context.mounted) return;
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => const WelcomeScreen()),
-                (_) => false,
-              );
-            },
-            child:
-                Text(l10n.signOut, style: const TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmClearValues(BuildContext context, VfdProvider provider) {
-    final l10n = AppLocalizations.of(context)!;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.clearAllValues),
-        content: Text(l10n.clearValuesConfirm),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx), child: Text(l10n.cancel)),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () {
-              Navigator.pop(ctx);
-              provider.clearAllParameterValues();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.allValuesCleared),
-                  backgroundColor: Colors.orange,
-                  duration: const Duration(seconds: 2),
-                ),
-              );
-            },
-            child:
-                Text(l10n.clear, style: const TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _exportConfiguration(BuildContext context) async {
-    final enterprise = context.read<EnterpriseProvider>();
-    if (!enterprise.guard(context, AppPermission.exportConfiguration)) return;
-
-    final provider = context.read<VfdProvider>();
-    final messenger = ScaffoldMessenger.of(context);
-
-    if (provider.selectedVendor == null || provider.selectedModelName == null) {
-      messenger.showSnackBar(
-        const SnackBar(
-          content: Text('Select vendor and model before exporting'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
-
-    final ok = await provider.shareConfigurationExport();
-    if (!mounted) return;
-    if (ok) {
-      messenger.showSnackBar(
-        const SnackBar(
-          content: Text('Configuration ready to share'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } else if (provider.errorMessage != null) {
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(provider.errorMessage!),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
-  Future<void> _importConfiguration(BuildContext context) async {
-    final enterprise = context.read<EnterpriseProvider>();
-    if (!enterprise.guard(context, AppPermission.importConfiguration)) return;
-
-    final provider = context.read<VfdProvider>();
-    final messenger = ScaffoldMessenger.of(context);
-
-    final error = await provider.importConfigurationFromFile();
-    if (!mounted) return;
-
-    if (error != null) {
-      messenger.showSnackBar(
-        SnackBar(content: Text(error), backgroundColor: Colors.red),
-      );
-      return;
-    }
-
-    messenger.showSnackBar(
-      const SnackBar(
-        content: Text('Configuration imported successfully'),
-        backgroundColor: Colors.green,
-      ),
-    );
-    _scrollToStep(ConfigurationFlow.activeStep(provider));
-  }
-
-  Future<void> _openSavedProjects(BuildContext context) async {
-    final enterprise = context.read<EnterpriseProvider>();
-    if (!enterprise.guard(context, AppPermission.manageProjects)) return;
-
-    final step = await Navigator.push<int>(
-      context,
-      MaterialPageRoute(builder: (_) => const SavedProjectsScreen()),
-    );
-    if (step != null && mounted) {
-      _scrollToStep(step);
-    }
-  }
-
-  Future<void> _showRecentConfigs(BuildContext context) async {
-    final messenger = ScaffoldMessenger.of(context);
-    final recent = await HomeScreenWidgetService.getRecentConfigs();
-    if (!mounted) return;
-
-    if (recent.isEmpty) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('No recent VFD configurations yet')),
-      );
-      return;
-    }
-
-    if (!context.mounted) return;
-    await showModalBottomSheet(
-      context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
-                'Recent VFDs',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-            ...recent.map(
-              (item) => ListTile(
-                leading: const Icon(Icons.history),
-                title: Text('${item.vendorName} ${item.modelName}'),
-                subtitle: Text(
-                  item.powerRating.isNotEmpty
-                      ? '${item.powerRating} kW'
-                      : 'Tap to load',
-                ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  final power = double.tryParse(item.powerRating);
-                  _applyVendorModelSelection(
-                    vendorName: item.vendorName,
-                    modelName: item.modelName,
-                    powerKw: power,
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _showLanguagePicker(
-    BuildContext context,
-    LocaleProvider localeProvider,
-  ) {
-    return showModalBottomSheet(
-      context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
-                'Select Language',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-            ...LocaleProvider.supportedLocales.map((locale) {
-              final selected = localeProvider.locale == locale;
-              return ListTile(
-                leading: Icon(
-                  selected ? Icons.check_circle : Icons.circle_outlined,
-                  color: selected ? AppTheme.primary : null,
-                ),
-                title: Text(localeProvider.getLanguageName(locale.languageCode)),
-                onTap: () {
-                  localeProvider.setLocale(locale);
-                  Navigator.pop(ctx);
-                },
-              );
-            }),
-          ],
-        ),
-      ),
     );
   }
 

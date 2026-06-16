@@ -194,7 +194,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 return const ListTile(
                   leading: Icon(Icons.business),
                   title: Text('Not in organization'),
-                  subtitle: Text('Use menu â†?Join Organization'),
+                  subtitle: Text('Use menu -> Join Organization'),
                 );
               }
               return Column(

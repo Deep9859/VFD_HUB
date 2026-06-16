@@ -16,10 +16,8 @@ migrate_working_dir/
 *.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# IDE (machine-specific paths)
+.vscode/
 
 # Flutter/Dart/Pub related
 **/doc/api/
@@ -42,9 +40,18 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 /android/build/
+/android/.kotlin/
+
+# Empty duplicate folder (use tools/ only)
+/tool/
 
 # Local scripts
 tmp_print_lines.py
+
+# Excel import intermediates (regenerate via tools/import_excel_master.py)
+tools/excel_master_parsed.json
+tools/excel_*_preview.txt
+tools/excel_url_*.txt
 
 # Local build caches (build_enhanced.bat)
 .pub-cache/

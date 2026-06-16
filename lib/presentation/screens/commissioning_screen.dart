@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../../core/services/audit_log_service.dart';
 import '../../core/services/modbus_tcp_client.dart';
-import '../../core/services/modbus_tcp_client.dart';
 import '../../data/models/audit_event.dart';
 import '../../data/models/vfd_parameter.dart';
 import '../providers/vfd_provider.dart';
@@ -80,7 +79,7 @@ class _CommissioningScreenState extends State<CommissioningScreen> {
 
     setState(() {
       _reading = true;
-      _status = 'Connecting to $host:$portâ€?;
+      _status = 'Connecting to $host:$port...';
       _results = [];
     });
 
@@ -121,7 +120,7 @@ class _CommissioningScreenState extends State<CommissioningScreen> {
     await AuditLogService.log(
       category: AuditCategory.commissioning,
       action: 'Modbus read',
-      detail: '$host â€?${mapped.where((r) => r.value != null).length}/${mapped.length} OK',
+      detail: '$host - ${mapped.where((r) => r.value != null).length}/${mapped.length} OK',
     );
 
     if (mounted) {
@@ -150,7 +149,7 @@ class _CommissioningScreenState extends State<CommissioningScreen> {
           AppCard(
             icon: Icons.lan,
             title: 'Live read (Modbus TCP)',
-            subtitle: 'Read-only FC03 â€?compare drive vs configured parameters',
+            subtitle: 'Read-only FC03 - compare drive vs configured parameters',
             accentColor: Colors.teal.shade700,
             child: Text(
               'Context: $contextLabel',
@@ -203,7 +202,7 @@ class _CommissioningScreenState extends State<CommissioningScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.download),
-              label: Text(_reading ? 'Readingâ€? : 'Read mapped parameters'),
+              label: Text(_reading ? 'Reading...' : 'Read mapped parameters'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.teal.shade700,
                 foregroundColor: Colors.white,
@@ -227,7 +226,7 @@ class _CommissioningScreenState extends State<CommissioningScreen> {
                   title: Text(r.parameter.paramName),
                   subtitle: Text(
                     'Code: ${r.parameter.paramCode}'
-                    '${r.pduAddress != null ? ' â€?PDU ${r.pduAddress}' : ''}',
+                    '${r.pduAddress != null ? ' - PDU ${r.pduAddress}' : ''}',
                   ),
                   trailing: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -249,7 +248,7 @@ class _CommissioningScreenState extends State<CommissioningScreen> {
           const SizedBox(height: 8),
           Text(
             'Safety: read-only mode. Ensure network access to the drive is authorized. '
-            'Register mapping is inferred from parameter codes â€?verify against the manual.',
+            'Register mapping is inferred from parameter codes - verify against the manual.',
             style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
           ),
         ],
