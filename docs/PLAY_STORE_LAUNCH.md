@@ -1,47 +1,39 @@
 # VFD Hub — Google Play Store Launch Guide
 
-## Current readiness: ~88% app / ~75% store listing (signing + assets still required)
+## Current readiness
 
-Code-side Play prep is in place (auth gate, privacy policy screen, release signing template). You still need a Google Play Console account, store assets, and an upload keystore.
-
----
-
-## 1. Create upload keystore (one-time)
-
-```powershell
-cd d:\Spray_VFD\vfd_param_app\android
-keytool -genkey -v -keystore upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload
-```
-
-Copy `key.properties.example` to `key.properties` and fill passwords:
-
-```properties
-storePassword=...
-keyPassword=...
-keyAlias=upload
-storeFile=../upload-keystore.jks
-```
-
-**Backup `upload-keystore.jks` safely.** Losing it blocks future updates.
+| Area | Status |
+|------|--------|
+| Release AAB signed | **Done** — `build/app/outputs/bundle/release/app-release.aab` |
+| Upload keystore | **Done** — `android/upload-keystore.jks` (backup required) |
+| Store icon + feature graphic | **Done** — `docs/store-assets/` |
+| Privacy policy HTML | **Done** — `docs/privacy-policy.html` (host on HTTPS) |
+| Phone screenshots | **You** — min 2 (`capture_screenshots.bat`) |
+| Play Console account | **You** — $25 one-time fee |
+| Contact email on listing | **You** — required field |
 
 ---
 
-## 2. Build release AAB (required by Play)
+## 1. Keystore (already created)
 
-```powershell
-cd d:\Spray_VFD\vfd_param_app
-flutter clean
-flutter pub get
-flutter build appbundle --release
+Backup these files off this PC:
+
+- `android/upload-keystore.jks`
+- `android/KEYSTORE_BACKUP.txt` (passwords)
+
+Losing the keystore blocks future app updates.
+
+---
+
+## 2. Build release AAB
+
+```bat
+build_play_store.bat
 ```
 
-Output: `build\app\outputs\bundle\release\app-release.aab`
+Output: `build\app\outputs\bundle\release\app-release.aab` (~65 MB)
 
-Optional APK for testing:
-
-```powershell
-flutter build apk --release
-```
+Signing: release upload key (`CN=VFD Hub`). Enable **Google Play App Signing** in Console on first upload.
 
 ---
 
@@ -52,15 +44,17 @@ flutter build apk --release
 | Developer account ($25 one-time) | You |
 | App name: **VFD Hub** | Ready |
 | Package: `com.vfdapp.vfd_param_app` | Ready |
-| Privacy policy URL | Host `docs/PRIVACY_POLICY.md` on a public page OR use GitHub Pages; link must match in-app policy |
+| Privacy policy URL | Host `docs/privacy-policy.html` |
 | App category | Tools / Business |
 | Content rating questionnaire | Complete in Console |
-| Data safety form | Declare: local account, camera, microphone, files — no server collection |
-| Screenshots (phone) | Min 2, recommend 6–8 |
-| Feature graphic 1024×500 | Required |
-| High-res icon 512×512 | Use `assets/images/icon.png` scaled |
-| Short + full description | Write in Console |
-| Contact email | Required |
+| Data safety form | See `docs/PLAY_STORE_UPLOAD.md` |
+| Screenshots (phone) | Min 2 — `capture_screenshots.bat` |
+| Feature graphic 1024×500 | `docs/store-assets/feature-graphic-1024x500.png` |
+| High-res icon 512×512 | `docs/store-assets/play-store-icon-512.png` |
+| Short + full description | `docs/STORE_LISTING.md` |
+| Contact email | Required — add yours |
+
+Full upload steps: **`docs/PLAY_STORE_UPLOAD.md`**
 
 ---
 
@@ -84,12 +78,10 @@ flutter build apk --release
 
 ## 6. Pre-submit testing
 
-- [ ] Fresh install → Welcome → Guest / Sign up / Sign in  
-- [ ] Full VFD path: vendor → model → kW → voltage → parameters  
-- [ ] QR scan on real device  
-- [ ] Sign out returns to Welcome  
-- [ ] Release build on Android 10+ device  
-- [ ] Privacy Policy opens from Welcome and About  
+- [x] Unit tests (209)
+- [x] Emulator integration smoke test
+- [ ] QR scan on **real device** (recommended)
+- [ ] Release install from AAB on Android 10+ device (optional: internal testing track)
 
 ---
 
@@ -98,25 +90,18 @@ flutter build apk --release
 Edit `pubspec.yaml`:
 
 ```yaml
-version: 1.1.0+3   # 1.1.0 = versionName, 3 = versionCode (must increase every upload)
+version: 1.1.0+4   # 1.1.0 = versionName, 4 = versionCode (increase +N every upload)
 ```
 
 ---
 
-## 8. After first approval
+## 8. Recommended launch order
 
-- Use **internal testing** track first (up to 100 testers).
-- Then **closed** → **open** → **production**.
-- Enable Play App Signing (recommended) when prompted.
+1. **Internal testing** — upload AAB, add your Gmail as tester  
+2. Install from Play link, verify guest login + tools  
+3. **Production** (or closed testing) after you are satisfied  
 
----
-
-## Remaining product gaps (not blocking first upload)
-
-- `database_helper.dart` / `home_screen.dart` refactor (maintainability)
-- Cloud backup / multi-device accounts
-- Home widget recent configs (stub returns empty)
-- Full E2E test on physical devices
+Review time: usually 1–3 days.
 
 ---
 

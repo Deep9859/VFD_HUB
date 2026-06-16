@@ -4,7 +4,7 @@ title VFD Hub - Emulator Test
 
 set "PROJECT_DIR=%~dp0"
 set "PUB_CACHE=%PROJECT_DIR%.pub-cache"
-set "GRADLE_USER_HOME=%PROJECT_DIR%.gradle"
+set "GRADLE_USER_HOME=%USERPROFILE%\.gradle-vfd-hub"
 if not exist "%PUB_CACHE%" mkdir "%PUB_CACHE%"
 if not exist "%GRADLE_USER_HOME%" mkdir "%GRADLE_USER_HOME%"
 
