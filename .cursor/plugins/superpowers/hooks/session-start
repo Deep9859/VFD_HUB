@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# SessionStart hook for vendored Superpowers skills (Cloud Agent / project scope).
+# Adapted from https://github.com/obra/superpowers (MIT) to load skills from
+# this repository's .cursor/skills/ directory.
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# .cursor/plugins/superpowers/hooks -> repo root
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../../../.." && pwd)"
+SKILL_FILE="${REPO_ROOT}/.cursor/skills/using-superpowers/SKILL.md"
+
+using_superpowers_content=$(cat "${SKILL_FILE}" 2>&1 || echo "Error reading using-superpowers skill at ${SKILL_FILE}")
+
+escape_for_json() {
+    local s="$1"
+    s="${s//\\/\\\\}"
+    s="${s//\"/\\\"}"
+    s="${s//$'\n'/\\n}"
+    s="${s//$'\r'/\\r}"
+    s="${s//$'\t'/\\t}"
+    printf '%s' "$s"
+}
+
+using_superpowers_escaped=$(escape_for_json "$using_superpowers_content")
+session_context="<EXTREMELY_IMPORTANT>\nYou have superpowers.\n\n**Below is the full content of your 'superpowers:using-superpowers' skill - your introduction to using skills. For all other skills, use the 'Skill' tool:**\n\n${using_superpowers_escaped}\n</EXTREMELY_IMPORTANT>"
+
+# Cursor Cloud / project hooks expect additional_context (snake_case).
+printf '{\n  "additional_context": "%s"\n}\n' "$session_context" | cat
+exit 0
