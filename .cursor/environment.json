@@ -1,0 +1,4 @@
+{
+  "name": "VFD Hub (Flutter)",
+  "install": "bash .cursor/install.sh"
+}
